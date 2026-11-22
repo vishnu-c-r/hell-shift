@@ -14,6 +14,8 @@ Reddit's catalog placements display short taglines alongside your app name and i
 | **Option B (Gameplay & Retro Focus)** | `Classic 1993 3D FPS action directly in your Reddit feed.` | **57 chars** | Games catalog, category browsing |
 | **Option C (Competitive & Social)** | `Daily 60 FPS retro survival FPS with Reddit leaderboards.` | **57 chars** | Community & competition feeds |
 | **Option D (Compact / Mobile)** | `Daily retro 3D survival FPS.` | **29 chars** | Small mobile discovery tiles |
+| **Option E (Micro Tagline ≤ 20)** | `Survive the hell.` | **17 chars** | Strict 20-character slot |
+| **Option F (Exact 20 Chars)** | `Daily retro FPS game` | **20 chars** | Exact 20-character limit |
 
 *Recommended Choice for Portal*: **`One arena. One day. Survive the hell.`**
 
@@ -40,6 +42,12 @@ One arena. One day. Survive the hell.
 ```text
 HELL SHIFT is a daily retro 3D survival FPS running natively inside your Reddit feed. Every 24 hours at 00:00 UTC, a new arena generates for the entire community. Blast through 5 escalating waves of demonic Husks with a centered double-barreled shotgun, dynamic muzzle lighting, and pneumatic blast doors. Climb your subreddit's daily leaderboard and share your scorecard to comments. Zero downloads. Instant play.
 ```
+
+### Micro Description (≤ 35 Characters)
+
+* **Lore Option (33 chars)**: `One arena. One day. Survive hell.`
+* **Platform Option (32 chars)**: `Daily 3D survival FPS on Reddit.`
+* **Exact Max Option (35 chars)**: `Daily 3D survival FPS inside Reddit`
 
 ---
 
