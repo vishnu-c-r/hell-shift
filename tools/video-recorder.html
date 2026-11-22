@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HELL SHIFT Video Recorder</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+    #canvas {
+      width: 1280px;
+      height: 720px;
+      background: #050202;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="1280" height="720"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1280;
+    const H = 720;
+    const TOTAL_DURATION = 10.0; // 10 seconds
+    const FPS = 30;
+    const TOTAL_FRAMES = TOTAL_DURATION * FPS;
+
+    window.isRecordingComplete = false;
+    window.recordedVideoData = null;
+    window.recordedWebmData = null;
+    window.recordedFrames = [];
+
+    // Helper draw routines
+    function drawCorridor(t, flash) {
+      // Ceiling
+      const ceilGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+      ceilGrad.addColorStop(0, '#060302');
+      ceilGrad.addColorStop(1, flash ? '#38140a' : '#140a06');
+      ctx.fillStyle = ceilGrad;
+      ctx.fillRect(0, 0, W, H * 0.5);
+
+      // Floor
+      const floorGrad = ctx.createLinearGradient(0, H * 0.5, 0, H);
+      floorGrad.addColorStop(0, flash ? '#3a1208' : '#150905');
+      floorGrad.addColorStop(1, flash ? '#5a1e0d' : '#281109');
+      ctx.fillStyle = floorGrad;
+      ctx.fillRect(0, H * 0.5, W, H * 0.5);
+
+      // Floor perspective grid lines
+      ctx.strokeStyle = flash ? '#7a2d16' : '#38160c';
+      ctx.lineWidth = 2;
+      for (let x = -W; x <= W * 2; x += 160) {
+        ctx.beginPath();
+        ctx.moveTo(W / 2, H * 0.5);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+
+      // Horizontal floor depth lines
+      for (let y = H * 0.52; y <= H; y += (y - H * 0.48) * 0.45) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+
+      // 3D Perspective Walls
+      const wallWalkOffset = Math.sin(t * 6) * 12;
+
+      // Left Wall
+      ctx.fillStyle = flash ? '#481c10' : '#22110a';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(W * 0.32, H * 0.32);
+      ctx.lineTo(W * 0.32, H * 0.68);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = flash ? '#8c351c' : '#452014';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Left Wall vertical pillars
+      for (let p of [0.08, 0.16, 0.24]) {
+        const x = W * p;
+        const yTop = H * p;
+        const yBot = H * (1 - p);
+        ctx.beginPath();
+        ctx.moveTo(x, yTop);
+        ctx.lineTo(x, yBot);
+        ctx.stroke();
+      }
+
+      // Right Wall
+      ctx.fillStyle = flash ? '#481c10' : '#22110a';
+      ctx.beginPath();
+      ctx.moveTo(W, 0);
+      ctx.lineTo(W * 0.68, H * 0.32);
+      ctx.lineTo(W * 0.68, H * 0.68);
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Right Wall vertical pillars
+      for (let p of [0.08, 0.16, 0.24]) {
+        const x = W * (1 - p);
+        const yTop = H * p;
+        const yBot = H * (1 - p);
+        ctx.beginPath();
+        ctx.moveTo(x, yTop);
+        ctx.lineTo(x, yBot);
+        ctx.stroke();
+      }
+    }
+
+    function drawBlastDoor(t, flash) {
+      // Door opens between t=2.0 and t=3.8
+      let openProgress = 0;
+      if (t >= 2.0 && t < 3.8) {
+        openProgress = (t - 2.0) / 1.8;
+      } else if (t >= 3.8) {
+        openProgress = 1.0;
+      }
+
+      const doorW = W * 0.36;
+      const doorH = H * 0.36;
+      const doorX = (W - doorW) / 2;
+      const doorY = H * 0.32;
+
+      // Dark Chamber Behind Door
+      ctx.fillStyle = '#0a0403';
+      ctx.fillRect(doorX, doorY, doorW, doorH);
+
+      // Distant Demonic Red Eyes behind doorway
+      if (t > 1.2 && t < 6.8) {
+        ctx.fillStyle = '#ff2200';
+        ctx.beginPath();
+        ctx.ellipse(W * 0.47, H * 0.48, 5, 3, 0, 0, Math.PI * 2);
+        ctx.ellipse(W * 0.50, H * 0.48, 5, 3, 0, 0, Math.PI * 2);
+        ctx.ellipse(W * 0.54, H * 0.49, 6, 4, 0, 0, Math.PI * 2);
+        ctx.ellipse(W * 0.57, H * 0.49, 6, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Upper Door Panel (slides up)
+      const upperY = doorY - (doorH * 0.5 * openProgress);
+      ctx.fillStyle = '#1c130f';
+      ctx.strokeStyle = '#f0642a';
+      ctx.lineWidth = 3;
+      ctx.fillRect(doorX, upperY, doorW, doorH * 0.5);
+      ctx.strokeRect(doorX, upperY, doorW, doorH * 0.5);
+
+      // Lower Door Panel (slides down)
+      const lowerY = doorY + (doorH * 0.5) + (doorH * 0.5 * openProgress);
+      ctx.fillRect(doorX, lowerY, doorW, doorH * 0.5);
+      ctx.strokeRect(doorX, lowerY, doorW, doorH * 0.5);
+
+      // Hydraulic Center Status Beacon
+      if (openProgress < 0.95) {
+        const beaconY = doorY + doorH * 0.5;
+        ctx.fillStyle = (t > 1.8) ? '#33cc44' : '#e05615';
+        ctx.beginPath();
+        ctx.arc(W / 2, beaconY, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Door Frame / Archway
+      ctx.strokeStyle = flash ? '#e05615' : '#8c351c';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(doorX, doorY, doorW, doorH);
+
+      // Hazard stripes on Door Header
+      ctx.fillStyle = '#f0642a';
+      ctx.fillRect(doorX, doorY - 18, doorW, 18);
+      ctx.fillStyle = '#110a08';
+      for (let hx = doorX; hx < doorX + doorW; hx += 32) {
+        ctx.beginPath();
+        ctx.moveTo(hx, doorY - 18);
+        ctx.lineTo(hx + 16, doorY);
+        ctx.lineTo(hx + 8, doorY);
+        ctx.lineTo(hx - 8, doorY - 18);
+        ctx.fill();
+      }
+    }
+
+    function drawHusks(t, flash) {
+      // Husk charging forward from door (t=3.0 to t=4.0)
+      if (t >= 3.0 && t < 4.2) {
+        const progress = (t - 3.0) / 1.2;
+        const scale = 0.5 + progress * 0.9;
+        const huskX = W * 0.5 + Math.sin(t * 12) * 20;
+        const huskY = H * (0.50 + progress * 0.12);
+
+        ctx.save();
+        ctx.translate(huskX, huskY);
+        ctx.scale(scale, scale);
+
+        // Demon Body
+        ctx.fillStyle = flash ? '#701c10' : '#2a0e08';
+        ctx.strokeStyle = '#aa2e18';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 50, 70, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Demon Head
+        ctx.beginPath();
+        ctx.arc(0, -75, 36, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Horns
+        ctx.beginPath();
+        ctx.moveTo(-25, -95);
+        ctx.lineTo(-45, -135);
+        ctx.lineTo(-15, -105);
+        ctx.moveTo(25, -95);
+        ctx.lineTo(45, -135);
+        ctx.lineTo(15, -105);
+        ctx.fillStyle = '#110503';
+        ctx.fill();
+
+        // Glowing Demon Eyes
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath();
+        ctx.arc(-14, -80, 7, 0, Math.PI * 2);
+        ctx.arc(14, -80, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      // Explosion / Death particles at t=4.0 to t=5.2
+      if (t >= 4.0 && t < 5.2) {
+        const expT = (t - 4.0) / 1.2;
+        ctx.save();
+        for (let i = 0; i < 24; i++) {
+          const angle = (i / 24) * Math.PI * 2;
+          const dist = expT * 260 + (i % 3) * 20;
+          const px = W / 2 + Math.cos(angle) * dist;
+          const py = H * 0.55 + Math.sin(angle) * dist * 0.7;
+          ctx.fillStyle = (i % 2 === 0) ? '#ff5511' : '#ffcc22';
+          ctx.beginPath();
+          ctx.arc(px, py, (1 - expT) * 12, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawShotgun(t, flash, recoil) {
+      // Walking sway (figure-8 DOOM bob)
+      const swayX = Math.sin(t * 7) * 10;
+      const swayY = Math.abs(Math.sin(t * 14)) * 8;
+
+      const gunX = W / 2 + swayX;
+      const gunY = H - 80 + swayY + recoil;
+
+      ctx.save();
+      ctx.translate(gunX, gunY);
+
+      // Hands & Mahogany Pump Stock
+      ctx.fillStyle = '#3a1a0e';
+      ctx.strokeStyle = '#1d0a04';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(-110, 160);
+      ctx.lineTo(110, 160);
+      ctx.lineTo(75, 40);
+      ctx.lineTo(-75, 40);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Steel Receiver
+      ctx.fillStyle = '#363d46';
+      ctx.strokeStyle = '#1b1f24';
+      ctx.lineWidth = 5;
+      ctx.fillRect(-70, -30, 140, 80);
+      ctx.strokeRect(-70, -30, 140, 80);
+
+      // Dual Blued-Steel Shotgun Barrels
+      // Left Barrel
+      ctx.fillStyle = '#4b535f';
+      ctx.fillRect(-64, -180, 58, 160);
+      ctx.strokeRect(-64, -180, 58, 160);
+      ctx.fillStyle = '#14171a';
+      ctx.beginPath();
+      ctx.ellipse(-35, -180, 24, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#050607';
+      ctx.beginPath();
+      ctx.ellipse(-35, -180, 14, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Right Barrel
+      ctx.fillStyle = '#4b535f';
+      ctx.fillRect(6, -180, 58, 160);
+      ctx.strokeRect(6, -180, 58, 160);
+      ctx.fillStyle = '#14171a';
+      ctx.beginPath();
+      ctx.ellipse(35, -180, 24, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#050607';
+      ctx.beginPath();
+      ctx.ellipse(35, -180, 14, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Center Brass Bead Sight
+      ctx.fillStyle = '#ffd152';
+      ctx.beginPath();
+      ctx.arc(0, -182, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Fiery Muzzle Flash Eruption when shooting
+      if (flash) {
+        ctx.fillStyle = '#ffea66';
+        ctx.beginPath();
+        ctx.arc(0, -210, 70, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ff6611';
+        ctx.beginPath();
+        ctx.arc(-40, -230, 45, 0, Math.PI * 2);
+        ctx.arc(40, -230, 45, 0, Math.PI * 2);
+        ctx.arc(0, -260, 55, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Incandescent Crown Spikes
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, -200, 30, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawHUD(t) {
+      // Bottom DOOM Style Status Bar
+      const hudY = H - 90;
+      ctx.fillStyle = '#0e0806';
+      ctx.fillRect(0, hudY, W, 90);
+      ctx.strokeStyle = '#5a2517';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(0, hudY, W, 90);
+
+      // Section Dividers
+      ctx.strokeStyle = '#35160d';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(280, hudY); ctx.lineTo(280, H);
+      ctx.moveTo(560, hudY); ctx.lineTo(560, H);
+      ctx.moveTo(840, hudY); ctx.lineTo(840, H);
+      ctx.stroke();
+
+      // 1. Vitality Console
+      ctx.fillStyle = '#8d7462';
+      ctx.font = 'bold 13px Courier New';
+      ctx.fillText('VITAL INTEGRITY', 30, hudY + 26);
+      ctx.fillStyle = (t > 4.2 && t < 5.8) ? '#ff3311' : '#ff4422';
+      ctx.font = 'bold 44px Courier New';
+      ctx.fillText((t > 4.2 && t < 5.8) ? '75%' : '100%', 30, hudY + 68);
+
+      // 2. Animated DOOM Marine Status Face
+      const faceX = 370;
+      const faceY = hudY + 8;
+      ctx.fillStyle = '#18100c';
+      ctx.fillRect(faceX, faceY, 80, 74);
+      ctx.strokeStyle = '#f0642a';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(faceX, faceY, 80, 74);
+
+      // Face base
+      ctx.fillStyle = '#c49a78';
+      ctx.beginPath();
+      ctx.rect(faceX + 16, faceY + 16, 48, 44);
+      ctx.fill();
+      // Hair
+      ctx.fillStyle = '#4a2e1b';
+      ctx.fillRect(faceX + 16, faceY + 12, 48, 12);
+      // Eyes
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(faceX + 24, faceY + 30, 10, 6);
+      ctx.fillRect(faceX + 46, faceY + 30, 10, 6);
+      // Pupils
+      const glance = Math.sin(t * 3) > 0 ? 2 : 0;
+      ctx.fillStyle = '#1c4d8c';
+      ctx.fillRect(faceX + 26 + glance, faceY + 31, 5, 5);
+      ctx.fillRect(faceX + 48 + glance, faceY + 31, 5, 5);
+      // Mouth (Pain wince or evil grin)
+      if (t >= 4.0 && t < 4.8) {
+        // Evil shooting grin!
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(faceX + 26, faceY + 48, 28, 8);
+        ctx.fillStyle = '#8d1810';
+        ctx.fillRect(faceX + 32, faceY + 50, 4, 4);
+      } else {
+        // Stoic grit
+        ctx.fillStyle = '#5a2214';
+        ctx.fillRect(faceX + 28, faceY + 50, 24, 4);
+      }
+
+      // 3. Ammo Console
+      ctx.fillStyle = '#8d7462';
+      ctx.font = 'bold 13px Courier New';
+      ctx.fillText('BUCKSHOT AMMO', 610, hudY + 26);
+      ctx.fillStyle = '#ffd152';
+      ctx.font = 'bold 44px Courier New';
+      ctx.fillText((t > 4.0) ? '10 / 72' : '12 / 72', 610, hudY + 68);
+
+      // 4. Wave & Score
+      ctx.fillStyle = '#8d7462';
+      ctx.font = 'bold 13px Courier New';
+      ctx.fillText('HOSTILE WAVE', 890, hudY + 26);
+      ctx.fillStyle = '#f0642a';
+      ctx.font = 'bold 44px Courier New';
+      ctx.fillText('WAVE 1/5', 890, hudY + 68);
+
+      // Top Transmission Header
+      ctx.fillStyle = 'rgba(14, 8, 6, 0.85)';
+      ctx.fillRect(0, 0, W, 42);
+      ctx.strokeStyle = '#4a2014';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, W, 42);
+      ctx.fillStyle = '#f0642a';
+      ctx.font = 'bold 16px Courier New';
+      ctx.fillText('// SECTOR: THE FURNACE // RESETS 00:00 UTC //', 24, 27);
+      ctx.fillStyle = '#ffb49f';
+      ctx.fillText('SURVIVORS: 1,482 // SUBREDDIT RANK #1', W - 420, 27);
+
+      // Interactive On-Screen Prompt
+      if (t >= 1.5 && t < 2.8) {
+        ctx.fillStyle = 'rgba(10, 5, 3, 0.9)';
+        ctx.fillRect(W / 2 - 180, H * 0.42, 360, 48);
+        ctx.strokeStyle = '#ffd152';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(W / 2 - 180, H * 0.42, 360, 48);
+        ctx.fillStyle = '#ffd152';
+        ctx.font = 'bold 20px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('[E] OPEN BLAST DOOR', W / 2, H * 0.42 + 31);
+        ctx.textAlign = 'left';
+      }
+
+      // Wave Purge Callout
+      if (t >= 5.5 && t < 7.8) {
+        ctx.fillStyle = 'rgba(10, 5, 3, 0.92)';
+        ctx.fillRect(W / 2 - 240, H * 0.38, 480, 54);
+        ctx.strokeStyle = '#f0642a';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(W / 2 - 240, H * 0.38, 480, 54);
+        ctx.fillStyle = '#fff5ea';
+        ctx.font = 'bold 24px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('// WAVE PURGED // +1,250 PTS //', W / 2, H * 0.38 + 36);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    function drawEndSplash(t) {
+      if (t < 8.0) return;
+      const alpha = Math.min(1.0, (t - 8.0) / 0.8);
+      ctx.fillStyle = `rgba(5, 2, 2, ${alpha})`;
+      ctx.fillRect(0, 0, W, H);
+
+      if (alpha > 0.4) {
+        ctx.save();
+        ctx.textAlign = 'center';
+
+        // Outer Metallic Box
+        ctx.fillStyle = '#140c09';
+        ctx.strokeStyle = '#e05615';
+        ctx.lineWidth = 4;
+        ctx.fillRect(W / 2 - 380, H / 2 - 170, 760, 340);
+        ctx.strokeRect(W / 2 - 380, H / 2 - 170, 760, 340);
+
+        // Subtitle
+        ctx.fillStyle = '#f0642a';
+        ctx.font = 'bold 18px Courier New';
+        ctx.fillText('// DAILY SURVIVAL FPS //', W / 2, H / 2 - 110);
+
+        // Giant Title
+        ctx.fillStyle = '#f0541e';
+        ctx.font = '900 84px Impact, Arial Black, sans-serif';
+        ctx.fillText('HELL SHIFT', W / 2, H / 2 - 10);
+        ctx.fillStyle = '#fff5ea';
+        ctx.fillText('HELL SHIFT', W / 2, H / 2 - 14);
+
+        // Rule
+        ctx.strokeStyle = '#5a2517';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(W / 2 - 300, H / 2 + 30);
+        ctx.lineTo(W / 2 + 300, H / 2 + 30);
+        ctx.stroke();
+
+        // Tagline
+        ctx.fillStyle = '#ffb49f';
+        ctx.font = 'bold 22px Courier New';
+        ctx.fillText('ONE ARENA. ONE DAY. SURVIVE THE HELL.', W / 2, H / 2 + 75);
+
+        // CTA
+        ctx.fillStyle = '#ffd152';
+        ctx.font = 'bold 18px Courier New';
+        ctx.fillText('PLAY DAILY IN YOUR REDDIT FEED • ZERO DOWNLOADS', W / 2, H / 2 + 120);
+
+        ctx.restore();
+      }
+    }
+
+    // Main render frame at time t (seconds)
+    function renderFrame(t) {
+      // Calculate shooting triggers
+      const isShot1 = (t >= 4.0 && t < 4.16);
+      const isShot2 = (t >= 6.4 && t < 6.56);
+      const flash = isShot1 || isShot2;
+
+      let recoil = 0;
+      if (t >= 4.0 && t < 4.6) recoil = (1 - (t - 4.0) / 0.6) * 36;
+      if (t >= 6.4 && t < 7.0) recoil = (1 - (t - 6.4) / 0.6) * 36;
+
+      ctx.save();
+      // Screen shake on shot
+      if (flash) {
+        ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 8);
+      }
+
+      drawCorridor(t, flash);
+      drawBlastDoor(t, flash);
+      drawHusks(t, flash);
+      drawShotgun(t, flash, recoil);
+      drawHUD(t);
+      drawEndSplash(t);
+
+      ctx.restore();
+    }
+
+    // Record using MediaRecorder and canvas.captureStream
+    async function startRecording() {
+      console.log('Starting canvas stream capture...');
+      const stream = canvas.captureStream(FPS);
+
+      const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs=avc1')
+        ? 'video/mp4; codecs=avc1'
+        : (MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 'video/webm; codecs=vp9');
+
+      console.log('Using video recorder MIME:', mimeType);
+      const recorder = new MediaRecorder(stream, {
+        mimeType: mimeType,
+        videoBitsPerSecond: 6000000 // 6 Mbps high quality
+      });
+
+      const chunks = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        console.log('Recorder stopped. Converting blob...');
+        const blob = new Blob(chunks, { type: mimeType });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          window.recordedVideoData = reader.result;
+          window.isRecordingComplete = true;
+          console.log('Video ready! Length:', window.recordedVideoData.length);
+        };
+        reader.readAsDataURL(blob);
+      };
+
+      recorder.start();
+
+      let currentFrame = 0;
+      const frameInterval = 1000 / FPS;
+
+      const loop = () => {
+        const t = currentFrame / FPS;
+        renderFrame(t);
+
+        // Grab sample frames (every 10 frames = 3 fps) for GIF creation
+        if (currentFrame % 10 === 0) {
+          window.recordedFrames.push(canvas.toDataURL('image/jpeg', 0.85));
+        }
+
+        currentFrame++;
+        if (currentFrame <= TOTAL_FRAMES) {
+          setTimeout(loop, frameInterval);
+        } else {
+          recorder.stop();
+        }
+      };
+
+      loop();
+    }
+
+    // Trigger recording immediately
+    window.onload = () => {
+      startRecording();
+    };
+  </script>
+</body>
+</html>

@@ -8,3 +8,5 @@ coverage
 .devvit
 .edge-test-profile
 .edge-assets-profile
+.edge-video-profile
+.temp_frames
