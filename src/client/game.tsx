@@ -28,17 +28,24 @@ import { PauseMenu } from './ui/PauseMenu';
 import { TouchControls } from './ui/TouchControls';
 import type { GameView } from './ui/types';
 import { createRenderer, type Renderer } from './render/renderer';
+import { sound } from './audio/sound';
 
 export const GameApp = () => {
   const [view, setView] = useState<GameView>('briefing');
   const [initData, setInitData] = useState<InitResponse | null>(null);
   const [crtEnabled, setCrtEnabled] = useState(true);
+  const [audioMuted, setAudioMuted] = useState<boolean>(() => sound.isMuted());
   const [isTouchDevice] = useState(
     () =>
       'ontouchstart' in window ||
       navigator.maxTouchPoints > 0 ||
       window.matchMedia('(pointer: coarse)').matches
   );
+
+  const handleToggleAudio = useCallback(() => {
+    const next = sound.toggleMute();
+    setAudioMuted(next);
+  }, []);
 
   // Active game simulation state
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -186,9 +193,36 @@ export const GameApp = () => {
           steps < 6 &&
           current.status === 'playing'
         ) {
+          const prevCooldown = current.player.fireCooldown;
+          const prevHealth = current.player.health;
+          const prevEventsCount = current.events.length;
+          const prevShotsHit = current.shotsHit;
+          const prevKills = current.kills;
+
           updateGame(current, inputRef.current, fixedStep);
           accumulatorRef.current -= fixedStep;
           steps += 1;
+
+          // Procedural Audio SFX Triggers
+          if (prevCooldown <= 0 && current.player.fireCooldown > 0) {
+            sound.playShoot();
+          }
+          if (current.player.health < prevHealth) {
+            sound.playHurt();
+          }
+          if (current.events.length > prevEventsCount) {
+            const newEvents = current.events.slice(prevEventsCount);
+            for (const evt of newEvents) {
+              if (evt.kind === 'kill') sound.playKill();
+              else if (evt.kind === 'pickup') sound.playPickup();
+              else if (evt.kind === 'reload') sound.playReload();
+              else if (evt.kind === 'empty') sound.playEmpty();
+              else if (evt.kind === 'victory') sound.playVictory();
+              else if (evt.kind === 'defeat') sound.playDefeat();
+            }
+          } else if (current.shotsHit > prevShotsHit && current.kills === prevKills) {
+            sound.playHit();
+          }
         }
 
         const canvas = canvasRef.current;
@@ -205,6 +239,8 @@ export const GameApp = () => {
         setGameState({ ...current });
 
         if (current.status !== 'playing') {
+          if (current.status === 'victory') sound.playVictory();
+          else sound.playDefeat();
           const summary = getRunSummary(current);
           setRunSummary(summary);
           void submitScore(summary);
@@ -481,6 +517,8 @@ export const GameApp = () => {
                 inputRef.current.reload = false;
               }, 100);
             }}
+            audioMuted={audioMuted}
+            onToggleAudio={handleToggleAudio}
           />
 
           {isTouchDevice && (
@@ -529,6 +567,8 @@ export const GameApp = () => {
           onQuit={() => setView('briefing')}
           crtEnabled={crtEnabled}
           onToggleCrt={() => setCrtEnabled((prev) => !prev)}
+          audioMuted={audioMuted}
+          onToggleAudio={handleToggleAudio}
         />
       )}
 
@@ -539,6 +579,7 @@ export const GameApp = () => {
           personalBest={initData?.personalBest ?? null}
           rank={initData?.rank ?? null}
           totalPlayers={initData?.totalPlayers ?? 1}
+          daily={currentDaily}
           onRestart={handleStartRun}
           onViewLeaderboard={() => setView('leaderboard')}
         />

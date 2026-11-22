@@ -181,6 +181,18 @@ button {
   box-shadow: 0 4px 0 #0d0806;
 }
 
+.hell-button-share {
+  background: linear-gradient(180deg, #ff5722, #c8321e);
+  border: 1px solid #ff8a65;
+  color: #fff8f0;
+  box-shadow: 0 4px 0 #5d170d;
+}
+
+.hell-button-share:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 5px 0 #5d170d;
+}
+
 .hell-button-secondary:hover {
   color: var(--bone);
   border-color: #8a4f38;
@@ -340,6 +352,30 @@ button {
   font-size: 0.62rem;
   color: var(--ember);
   letter-spacing: 0.1em;
+}
+
+.hell-hud-sound-btn {
+  background: #20130d;
+  border: 1px solid var(--rust);
+  color: var(--bone);
+  padding: 8px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #0d0806;
+  margin-right: 6px;
+}
+
+.hell-hud-sound-btn:hover {
+  background: #341f16;
+  border-color: var(--ember);
+}
+
+.hell-hud-sound-btn.is-muted {
+  color: #8d7462;
+  border-color: #3f271c;
+  background: #140c09;
 }
 
 .hell-hud-pause-btn {

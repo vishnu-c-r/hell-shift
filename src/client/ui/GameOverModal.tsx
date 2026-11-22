@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 import {
   SCORE_ACCURACY_BONUS,
   SCORE_PER_KILL,
@@ -13,9 +13,11 @@ export const GameOverModal: FC<GameOverModalProps> = ({
   personalBest,
   rank,
   totalPlayers,
+  daily,
   onRestart,
   onViewLeaderboard,
 }) => {
+  const [copied, setCopied] = useState(false);
   const isVictory = summary.outcome === 'victory';
   const accuracy = Math.round(
     calculateAccuracy(summary.shotsFired, summary.shotsHit) * 100
@@ -28,6 +30,31 @@ export const GameOverModal: FC<GameOverModalProps> = ({
     calculateAccuracy(summary.shotsFired, summary.shotsHit) * SCORE_ACCURACY_BONUS
   );
   const victoryPoints = isVictory ? SCORE_VICTORY_BONUS : 0;
+
+  const handleCopyScorecard = () => {
+    const dayLabel = daily ? `Day #${daily.dayNumber} [${daily.arenaName}]` : 'Daily Shift';
+    const rankLabel = rank !== null ? ` (Rank #${rank}/${totalPlayers})` : '';
+    const statusLabel = isVictory ? 'PURGED' : 'FLATLINE';
+
+    const text = [
+      `🔥 HELL SHIFT // ${dayLabel}`,
+      `🏆 Score: ${summary.score} PTS${rankLabel}`,
+      `💀 Husks Slain: ${summary.kills}/46 (${statusLabel})`,
+      `⏱️ Time Left: ${timeSeconds}s`,
+      `🎯 Accuracy: ${accuracy}%`,
+      `Can you beat my run? Survive the hell today!`,
+    ].join('\n');
+
+    if (navigator?.clipboard?.writeText) {
+      void navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      });
+    } else {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
 
   return (
     <div className="hell-modal-backdrop">
@@ -102,6 +129,14 @@ export const GameOverModal: FC<GameOverModalProps> = ({
 
         {/* Action buttons */}
         <div className="hell-modal-actions">
+          <button
+            type="button"
+            className="hell-button hell-button-share"
+            onClick={handleCopyScorecard}
+            title="Copy formatted scorecard to paste in Reddit comments"
+          >
+            {copied ? '✓ COPIED // PASTE IN REDDIT COMMENTS' : '📋 SHARE RUN TO REDDIT'}
+          </button>
           <button
             type="button"
             className="hell-button hell-button-primary"

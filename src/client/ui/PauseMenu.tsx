@@ -7,6 +7,8 @@ export const PauseMenu: FC<PauseMenuProps> = ({
   onQuit,
   crtEnabled,
   onToggleCrt,
+  audioMuted = false,
+  onToggleAudio,
 }) => {
   return (
     <div className="hell-modal-backdrop">
@@ -31,6 +33,18 @@ export const PauseMenu: FC<PauseMenuProps> = ({
             />
             <span className="hell-toggle-text">CRT Scanlines & Phosphor Glow</span>
           </label>
+
+          {onToggleAudio && (
+            <label className="hell-toggle-label">
+              <input
+                type="checkbox"
+                checked={!audioMuted}
+                onChange={onToggleAudio}
+                className="hell-checkbox"
+              />
+              <span className="hell-toggle-text">Industrial Audio & SFX</span>
+            </label>
+          )}
         </div>
 
         <div className="hell-rule" />

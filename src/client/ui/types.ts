@@ -7,6 +7,8 @@ export type HudProps = {
   gameState: GameState;
   onPause: () => void;
   onReload: () => void;
+  audioMuted?: boolean;
+  onToggleAudio?: () => void;
 };
 
 export type BriefingModalProps = {
@@ -22,6 +24,7 @@ export type GameOverModalProps = {
   personalBest: number | null;
   rank: number | null;
   totalPlayers: number;
+  daily?: InitResponse['daily'];
   onRestart: () => void;
   onViewLeaderboard: () => void;
 };
@@ -40,6 +43,8 @@ export type PauseMenuProps = {
   onQuit: () => void;
   crtEnabled: boolean;
   onToggleCrt: () => void;
+  audioMuted?: boolean;
+  onToggleAudio?: () => void;
 };
 
 export type TouchControlsProps = {

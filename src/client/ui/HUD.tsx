@@ -15,7 +15,13 @@ const formatSeconds = (totalSeconds: number): string => {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
-export const HUD: FC<HudProps> = ({ gameState, onPause, onReload }) => {
+export const HUD: FC<HudProps> = ({
+  gameState,
+  onPause,
+  onReload,
+  audioMuted = false,
+  onToggleAudio,
+}) => {
   const { player, waveIndex, timeLeft, score, events, hitMarker } = gameState;
   const remainingEnemies = getEnemiesRemaining(gameState);
   const accuracy = Math.round(
@@ -74,6 +80,18 @@ export const HUD: FC<HudProps> = ({ gameState, onPause, onReload }) => {
           <strong className="hell-hud-value">{score} PTS</strong>
           <span className="hell-hud-subtext">{accuracy}% ACC</span>
         </div>
+
+        {onToggleAudio && (
+          <button
+            type="button"
+            className={`hell-hud-sound-btn ${audioMuted ? 'is-muted' : ''}`}
+            onClick={onToggleAudio}
+            title={audioMuted ? 'Unmute Sound' : 'Mute Sound'}
+            aria-label={audioMuted ? 'Unmute sound' : 'Mute sound'}
+          >
+            {audioMuted ? '🔇 MUTE' : '🔊 SFX'}
+          </button>
+        )}
 
         <button
           type="button"
