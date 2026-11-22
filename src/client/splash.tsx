@@ -43,7 +43,7 @@ const Splash = () => {
   const remaining = init ? Date.parse(init.daily.endsAt) - now : 0;
 
   return (
-    <main className="hell-shell">
+    <main className="hell-splash-shell">
       <section className="hell-panel">
         <p className="hell-kicker">Daily survival arena</p>
         <h1 className="hell-title">HELL SHIFT</h1>

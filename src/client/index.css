@@ -47,7 +47,7 @@ button {
    ========================================================================== */
 
 .hell-shell {
-  min-height: 100vh;
+  min-height: 100%;
   width: 100%;
   height: 100%;
   display: grid;
@@ -60,7 +60,27 @@ button {
       rgba(255, 255, 255, 0.02) 0 1px,
       transparent 1px 3px),
     var(--ink);
-  overflow-y: auto;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.hell-splash-shell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(8px, 2.5vw, 16px);
+  touch-action: pan-y;
+  background:
+    radial-gradient(circle at 50% 15%, #3a140d 0%, transparent 60%),
+    repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      transparent 1px 3px),
+    var(--ink);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .hell-panel {
@@ -70,8 +90,9 @@ button {
   box-shadow:
     0 0 0 4px #090504,
     0 24px 80px rgba(0, 0, 0, 0.85);
-  padding: clamp(18px, 4vw, 36px);
+  padding: clamp(14px, 3.5vw, 28px);
   position: relative;
+  box-sizing: border-box;
 }
 
 .hell-kicker {
