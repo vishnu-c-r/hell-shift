@@ -551,6 +551,7 @@ button {
 /* Bottom status consoles */
 .hell-hud-bottombar {
   justify-content: space-between;
+  align-items: flex-end;
   width: 100%;
 }
 
@@ -560,6 +561,66 @@ button {
   padding: 10px 14px;
   min-width: 180px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.hell-vital-layout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hell-vital-details {
+  flex: 1;
+  min-width: 130px;
+}
+
+/* Iconic DOOM Status Bar Marine Face Widget */
+.hell-doom-face-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 64px;
+  background: #140d09;
+  border: 3px solid #5a3525;
+  border-top-color: #8c5338;
+  border-left-color: #8c5338;
+  border-bottom-color: #2b170e;
+  border-right-color: #2b170e;
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.95),
+    0 4px 14px rgba(0, 0, 0, 0.8);
+  padding: 2px;
+  flex-shrink: 0;
+  transition: transform 70ms ease, box-shadow 70ms ease, border-color 70ms ease;
+  user-select: none;
+}
+
+.hell-doom-face-container.hell-face-pain {
+  border-color: #c8321e;
+  box-shadow:
+    inset 0 0 14px rgba(200, 50, 30, 0.9),
+    0 0 12px rgba(200, 50, 30, 0.7);
+  transform: scale(0.95) translateY(1px);
+}
+
+.hell-doom-face-container.hell-face-smile {
+  border-color: #f0642a;
+  box-shadow:
+    inset 0 0 12px rgba(240, 100, 42, 0.7),
+    0 0 10px rgba(240, 100, 42, 0.5);
+  transform: scale(1.02);
+}
+
+.hell-doom-face-container.hell-face-dead {
+  border-color: #4a1e1e;
+  filter: grayscale(0.4) brightness(0.65);
+}
+
+.hell-doom-face-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .hell-vital-header,
@@ -1228,6 +1289,13 @@ button {
   .hell-hud-bottombar {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .hell-doom-face-container {
+    align-self: center;
+    width: 50px;
+    height: 56px;
+    order: -1;
   }
 
   .hell-hud-console-block {

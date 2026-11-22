@@ -62,50 +62,68 @@ class SoundSystem {
   }
 
   /**
-   * Pulse scattergun blast: fast white-noise burst + low square wave thump
+   * DOOM Super Shotgun blast: lowpass noise crunch + sub-bass drop + mechanical pump cock
    */
   public playShoot(): void {
     if (this.muted || !this.init() || !this.ctx || !this.masterGain) return;
     const now = this.ctx.currentTime;
 
-    // 1. Noise burst (gunshot crunch)
-    const bufferSize = Math.floor(this.ctx.sampleRate * 0.12);
+    // 1. Visceral shotgun blast crunch (white noise burst through dynamic low-pass)
+    const bufferSize = Math.floor(this.ctx.sampleRate * 0.16);
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.22));
     }
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
 
     const noiseFilter = this.ctx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.setValueAtTime(1400, now);
-    noiseFilter.frequency.exponentialRampToValueAtTime(300, now + 0.12);
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(3200, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(350, now + 0.16);
 
     const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.7, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+    noiseGain.gain.setValueAtTime(0.85, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
 
     noise.connect(noiseFilter);
     noiseFilter.connect(noiseGain);
     noiseGain.connect(this.masterGain);
     noise.start(now);
 
-    // 2. Low-frequency punch
+    // 2. Chest-thumping DOOM sub-bass drop (saw/sine dive from 220Hz down to 35Hz)
     const osc = this.ctx.createOscillator();
     const oscGain = this.ctx.createGain();
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(160, now);
-    osc.frequency.exponentialRampToValueAtTime(45, now + 0.14);
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.18);
 
-    oscGain.gain.setValueAtTime(0.6, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+    oscGain.gain.setValueAtTime(0.8, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
 
     osc.connect(oscGain);
     oscGain.connect(this.masterGain);
     osc.start(now);
-    osc.stop(now + 0.14);
+    osc.stop(now + 0.18);
+
+    // 3. Mechanical pump-action cock / shell eject clack at 0.14s and 0.20s
+    const playCockClick = (time: number, freq: number) => {
+      if (!this.ctx || !this.masterGain) return;
+      const clickOsc = this.ctx.createOscillator();
+      const clickGain = this.ctx.createGain();
+      clickOsc.type = 'triangle';
+      clickOsc.frequency.setValueAtTime(freq, time);
+      clickOsc.frequency.exponentialRampToValueAtTime(140, time + 0.035);
+      clickGain.gain.setValueAtTime(0.35, time);
+      clickGain.gain.exponentialRampToValueAtTime(0.01, time + 0.035);
+      clickOsc.connect(clickGain);
+      clickGain.connect(this.masterGain);
+      clickOsc.start(time);
+      clickOsc.stop(time + 0.035);
+    };
+    playCockClick(now + 0.14, 520);
+    playCockClick(now + 0.20, 740);
   }
 
   /**
@@ -131,47 +149,61 @@ class SoundSystem {
   }
 
   /**
-   * Husk kill: deep death roar / crunch
+   * Demon kill: deep death roar / crunch
    */
   public playKill(): void {
     if (this.muted || !this.init() || !this.ctx || !this.masterGain) return;
     const now = this.ctx.currentTime;
 
     const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
     const gain = this.ctx.createGain();
+
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(120, now);
-    osc.frequency.exponentialRampToValueAtTime(30, now + 0.28);
+    osc.frequency.setValueAtTime(260, now);
+    osc.frequency.exponentialRampToValueAtTime(32, now + 0.32);
 
-    gain.gain.setValueAtTime(0.6, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1800, now);
+    filter.frequency.exponentialRampToValueAtTime(250, now + 0.32);
 
-    osc.connect(gain);
+    gain.gain.setValueAtTime(0.7, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32);
+
+    osc.connect(filter);
+    filter.connect(gain);
     gain.connect(this.masterGain);
     osc.start(now);
-    osc.stop(now + 0.28);
+    osc.stop(now + 0.32);
   }
 
   /**
-   * Player hurt: alarming abrasive siren buzz
+   * Player hurt: classic DOOM Marine impact grunt
    */
   public playHurt(): void {
     if (this.muted || !this.init() || !this.ctx || !this.masterGain) return;
     const now = this.ctx.currentTime;
 
     const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
     const gain = this.ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(88, now);
-    osc.frequency.setValueAtTime(65, now + 0.08);
 
-    gain.gain.setValueAtTime(0.7, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(135, now);
+    osc.frequency.exponentialRampToValueAtTime(68, now + 0.18);
 
-    osc.connect(gain);
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(650, now);
+    filter.Q.value = 3.5;
+
+    gain.gain.setValueAtTime(0.8, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+    osc.connect(filter);
+    filter.connect(gain);
     gain.connect(this.masterGain);
     osc.start(now);
-    osc.stop(now + 0.22);
+    osc.stop(now + 0.18);
   }
 
   /**

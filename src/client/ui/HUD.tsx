@@ -6,6 +6,7 @@ import {
 } from '../../shared/game/constants';
 import { calculateAccuracy } from '../../shared/game/scoring';
 import { getEnemiesRemaining } from '../../shared/game/simulation';
+import { DoomFace } from './DoomFace';
 import type { HudProps } from './types';
 
 const formatSeconds = (totalSeconds: number): string => {
@@ -134,25 +135,35 @@ export const HUD: FC<HudProps> = ({
 
       {/* Bottom tactical console */}
       <footer className="hell-hud-bottombar">
-        {/* Vital status */}
+        {/* Vital status with Iconic DOOM Marine Face Widget */}
         <div
           className={`hell-hud-console-block hell-vital-block ${isLowHealth ? 'hell-block-critical' : ''}`}
         >
-          <div className="hell-vital-header">
-            <span className="hell-hud-label">VITAL INTEGRITY</span>
-            <span className="hell-vital-number">{player.health} HP</span>
-          </div>
-          <div className="hell-gauge-track">
-            <div
-              className={`hell-gauge-fill ${isLowHealth ? 'hell-gauge-critical' : 'hell-gauge-health'}`}
-              style={{ width: `${healthPercent}%` }}
+          <div className="hell-vital-layout">
+            <DoomFace
+              health={player.health}
+              damageFlash={player.damageFlash}
+              muzzleFlash={player.muzzleFlash}
+              isDead={gameState.status === 'dead' || player.health <= 0}
             />
+            <div className="hell-vital-details">
+              <div className="hell-vital-header">
+                <span className="hell-hud-label">VITAL INTEGRITY</span>
+                <span className="hell-vital-number">{player.health} HP</span>
+              </div>
+              <div className="hell-gauge-track">
+                <div
+                  className={`hell-gauge-fill ${isLowHealth ? 'hell-gauge-critical' : 'hell-gauge-health'}`}
+                  style={{ width: `${healthPercent}%` }}
+                />
+              </div>
+              {isLowHealth && (
+                <span className="hell-vital-alert hell-pulse-alert">
+                  CRITICAL DAMAGE DETECTED
+                </span>
+              )}
+            </div>
           </div>
-          {isLowHealth && (
-            <span className="hell-vital-alert hell-pulse-alert">
-              CRITICAL DAMAGE DETECTED
-            </span>
-          )}
         </div>
 
         {/* Munitions status */}

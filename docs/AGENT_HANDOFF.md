@@ -284,4 +284,70 @@ Production Devvit client and server bundles build cleanly.
 
 Test live in Reddit (`npm run dev`) or test local preview (`npm run preview`) to audition synthesized sound effects and test scorecard clipboard copying.
 
+## Session 005 — Antigravity — Classic DOOM (1993) Audio-Visual Overhaul
+
+### Completed
+
+- **Centered DOOM Double-Barreled Shotgun (`src/client/render/renderer.ts`)**:
+  - Upgraded weapon rendering from off-center placeholder to iconic centered double-barreled shotgun.
+  - Detailed pixel-art geometry:
+    - Twin blued-steel barrels with cylindrical highlight strips and specular glints.
+    - Steely muzzle rims and deep black cavernous bore holes.
+    - Center ventilated rib with cross-hatch slots and polished brass bead sight.
+    - Heavy steel receiver bracket with silver pivot pins.
+    - Rich mahogany forend pump grip with horizontal ribbed grip grooves.
+    - Tactical combat gloved hands cupping the forend grip.
+  - Authentic DOOM figure-8 walking sway: Horizontal sine sway (`bobX = Math.sin(phase) * 6`) + vertical double-frequency bounce (`bobY = |sin(phase * 2)| * 5`).
+  - Heavy recoil kickback on firing (`recoilY = player.recoil * 16`).
+  - Multi-tier fiery muzzle flash explosion crown:
+    - Searing white-hot plasma core directly over barrel openings.
+    - Intense bright yellow flame corona.
+    - Radiating orange blast spikes and branching incendiary spark clusters.
+  - Dynamic corridor illumination: Strobing walls (`muzzleBoost = 0.48`), ceilings, floors, and husk sprites on every shot.
+  - Dynamic screen shake on damage impact (`shakeX`, `shakeY`) alongside crimson pain flash.
+
+- **Iconic DOOM Status Bar Marine Face Widget (`src/client/ui/DoomFace.tsx`)**:
+  - Created pixel-art SVG marine face widget matching classic 1993 DOOM status bar operator.
+  - Dynamic damage tiers: Healthy (100–80 HP), Bruised (79–50 HP), Bloody (49–20 HP), Mutilated (<20 HP), Dead / Skull (0 HP).
+  - Combat expression reactions: Agony pain wince on damage flash, evil grinning smirk when firing / muzzle flash.
+  - Idle left/right marine eye glances.
+  - Styled with beveled metallic borders (`.hell-doom-face-container`) and integrated directly into the Vital Integrity console on the bottom-left, keeping the center viewport completely clear for weapon aim.
+
+- **Authentic DOOM Synthesizer Sound Design (`src/client/audio/sound.ts`)**:
+  - `playShoot`: Visceral double-barreled shotgun blast with lowpass noise crunch, chest-thumping 220Hz -> 35Hz sub-bass dive, and dual mechanical pump-action cock clacks at 0.14s and 0.20s.
+  - `playHurt`: Classic DOOM Marine guttural vocal grunt (sawtooth + bandpass formant filter diving from 135Hz to 68Hz).
+  - `playKill`: Descending demonic death roar with dynamic lowpass resonant filter sweep.
+
+- **Verification**:
+  - `node node_modules/typescript/bin/tsc -b`: 0 errors.
+  - `node node_modules/vitest/vitest.mjs run`: 38/38 passing tests across 8 suites.
+  - `npx vite build`: Clean production bundle (429ms).
+  - `node tools/smoke-test.js`: Verified across all 8 viewports (Desktop 1280x720, Splash feed card, Briefing modal, Leaderboard modal, In-game HUD/Canvas, Pause menu, Mobile Touch Portrait 390x844, Mobile Landscape 844x390, Reddit Mobile Feed 390x600) with 0 browser console logs and 0 errors.
+
+### Files changed
+
+- `src/client/ui/DoomFace.tsx` (created)
+- `src/client/ui/HUD.tsx`
+- `src/client/render/renderer.ts`
+- `src/client/audio/sound.ts`
+- `src/client/index.css`
+- `docs/screenshots/*.png`
+- `docs/AGENT_HANDOFF.md`
+
+### Tests executed
+
+- `npm run typecheck` — passed (0 errors)
+- `npm test` — 8 suites, 38 passed
+- `npm run build` — passed
+- `node tools/smoke-test.js` — 8 viewports passed with 0 console errors
+
+### Build status
+
+Production Devvit client and server bundles build cleanly.
+
+### Next recommended task
+
+Deploy or playtest on Reddit via `npm run dev` or interactive `npm run preview`.
+
+
 
