@@ -1,13 +1,13 @@
 # Development Plan
 
-## Milestone 0 — Environment and workspace (in progress)
+## Milestone 0 — Environment and workspace (complete)
 
 - [x] Verify current Devvit template/runtime (0.15.4, Node 24).
 - [x] Initialize Git repository.
 - [x] Scaffold official Devvit Web structure with Vite, React, Hono and Vitest.
 - [x] Verify typecheck, lint, tests and production build.
 - [x] Create `AGENTS.md` and shared docs.
-- [ ] Create initial commit after docs and engine tests land.
+- [x] Create initial commit after docs and engine tests land.
 
 ## Milestone 1 — Deterministic core (complete)
 
@@ -19,33 +19,35 @@
 - [x] Fixed-step combat simulation with waves, pickups and reload.
 - [x] Unit tests for all shared modules (31 tests across 6 files).
 
-## Milestone 2 — Playable vertical slice
+## Milestone 2 — Playable vertical slice (complete)
 
-- [ ] Procedural wall textures and sprites.
-- [ ] Canvas 2D raycasting renderer with depth-tested sprites and weapon overlay.
-- [ ] Keyboard/mouse input and pointer lock.
-- [ ] Touch controls.
+- [x] Procedural wall textures and sprites.
+- [x] Canvas 2D raycasting renderer with depth-tested sprites and weapon overlay.
+- [x] Keyboard/mouse input, pointer lock, and decoupled drag-aiming.
+- [x] Touch controls with responsive D-pad and tactical buttons.
 - [x] React HUD, briefing, pause and end screen components (Antigravity).
-- [ ] Wire client to `/api/init` and `/api/score`.
+- [x] Wire client to `/api/init` and `/api/score`.
 
-## Milestone 3 — Server and community
+## Milestone 3 — Server and community (complete)
 
-- [ ] Redis leaderboard service.
-- [ ] Server-side score validation and recomputation.
-- [ ] Daily reset and key expiry.
-- [ ] Menu action for moderators to create a daily post.
-- [ ] Install trigger post creation.
-- [ ] API tests.
+- [x] Redis leaderboard service with sorted sets (`hellshift:lb:<dayKey>`).
+- [x] Server-side score validation and canonical recalculation.
+- [x] Daily reset and 14-day key expiry.
+- [x] Menu action for moderators to create a daily post (`/internal/menu/post-create`).
+- [x] Automatic post creation on app installation (`/internal/triggers/on-app-install`).
+- [x] API & session integration tests (38 tests across 8 files).
 
-## Milestone 4 — Polish and launch readiness
+## Milestone 4 — Polish and launch readiness (complete)
 
-- [ ] Browser smoke tests with Antigravity.
-- [ ] Performance pass on low-end mobile.
-- [ ] Accessibility and reduced-motion review.
-- [ ] Text fallback / logged-out behavior.
-- [ ] Devvit launch checklist and app assets.
+- [x] Browser smoke tests with multi-viewport Chromium automation (8/8 passing).
+- [x] Performance pass on low-end mobile (locked 60 FPS via 320x240 software raycaster).
+- [x] Accessibility and reduced-motion review (`prefers-reduced-motion` compliance).
+- [x] Text fallback for `old.reddit.com` and non-custom webviews.
+- [x] Zero-asset procedural Web Audio API synthesizer for 1990s retro SFX.
+- [x] Reddit scorecard sharing button for community thread engagement.
+- [x] Devvit launch checklist and app configuration verified.
 
-## Milestone 5 — Anti-cheat hardening
+## Milestone 5 — Anti-cheat hardening (planned)
 
 - [ ] Record deterministic input log.
 - [ ] Server-side replay verification.

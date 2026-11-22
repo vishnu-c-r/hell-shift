@@ -72,7 +72,16 @@ const Splash = () => {
           className="hell-button"
           type="button"
           disabled={!init}
-          onClick={(event) => requestExpandedMode(event.nativeEvent, 'game')}
+          onClick={(event) => {
+            try {
+              requestExpandedMode(event.nativeEvent, 'game');
+            } catch {
+              // Ignore if not in Devvit context
+            }
+            if (typeof window !== 'undefined' && window.self === window.top) {
+              window.location.href = 'game.html';
+            }
+          }}
         >
           Enter the arena
         </button>

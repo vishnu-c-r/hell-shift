@@ -133,7 +133,10 @@ app.post('/internal/menu/post-create', async (c) => {
     const post = await reddit.submitCustomPost({
       subredditName,
       title: `HELL SHIFT — Daily Survival Arena [Day #${daily.dayNumber}: ${daily.arenaName}]`,
-      entry: 'splash.html',
+      entry: 'default',
+      textFallback: {
+        text: `HELL SHIFT — Daily Survival Arena [Day #${daily.dayNumber}: ${daily.arenaName}]\n\nOne arena. One day. Survive the hell.\n\nOpen this post on modern Reddit (web or mobile app) to enter today's 2.5D interactive survival arena!`,
+      },
     });
 
     return c.json({
@@ -158,7 +161,10 @@ app.post('/internal/triggers/on-app-install', async (c) => {
       const post = await reddit.submitCustomPost({
         subredditName,
         title: `HELL SHIFT — Daily Survival Arena [Day #${daily.dayNumber}: ${daily.arenaName}]`,
-        entry: 'splash.html',
+        entry: 'default',
+        textFallback: {
+          text: `HELL SHIFT — Daily Survival Arena [Day #${daily.dayNumber}: ${daily.arenaName}]\n\nOne arena. One day. Survive the hell.\n\nOpen this post on modern Reddit (web or mobile app) to enter today's 2.5D interactive survival arena!`,
+        },
       });
       console.log(`HELL SHIFT auto-created daily arena post: ${post.id}`);
     } catch (err) {
