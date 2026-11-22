@@ -7,6 +7,7 @@ export type HudProps = {
   gameState: GameState;
   onPause: () => void;
   onReload: () => void;
+  onInteract?: () => void;
   audioMuted?: boolean;
   onToggleAudio?: () => void;
 };
@@ -54,4 +55,6 @@ export type TouchControlsProps = {
   onFireEnd: () => void;
   onReload: () => void;
   onPause: () => void;
+  canOpenDoor?: boolean;
+  onInteract?: () => void;
 };

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Arena } from './arena';
-import { TILE_BRICK, TILE_EMPTY, WAVE_COUNTS } from './constants';
+import {
+  DOOR_OPEN_DURATION,
+  TILE_BRICK,
+  TILE_DOOR_CLOSED,
+  TILE_DOOR_OPEN,
+  TILE_EMPTY,
+  WAVE_COUNTS,
+} from './constants';
 import type { EnemyState, InputState } from './simulation';
 import {
   createGame,
@@ -16,6 +23,7 @@ type InputOverrides = {
   lookDelta?: number;
   shoot?: boolean;
   reload?: boolean;
+  interact?: boolean;
 };
 
 type EnemyOverrides = {
@@ -42,6 +50,7 @@ const makeInput = (overrides: InputOverrides = {}): InputState => ({
   lookDelta: overrides.lookDelta ?? 0,
   shoot: overrides.shoot ?? false,
   reload: overrides.reload ?? false,
+  interact: overrides.interact ?? false,
 });
 
 const makeEnemy = (overrides: EnemyOverrides = {}): EnemyState => ({
@@ -254,5 +263,35 @@ describe('game simulation', () => {
     }
 
     expect(JSON.stringify(first)).toBe(JSON.stringify(second));
+  });
+
+  it('detects, opens, and auto-cycles blast doors', () => {
+    const arena = makeOpenArena();
+    // Place a closed door near player spawn (spawn is at 2.5, 2.5)
+    arena.tiles[2 * arena.width + 3] = TILE_DOOR_CLOSED; // at (3, 2)
+    const state = createGame(arena, 42);
+    state.player.x = 2.5;
+    state.player.y = 2.5;
+    state.waveState = 'intro';
+    state.waveTimer = 999; // keep wave in intro so enemies don't spawn during door test
+
+    // Simulation step detects nearby door
+    updateGame(state, makeInput(), 0.05);
+    expect(state.canOpenDoor).toBe(true);
+
+    // Player presses interact
+    updateGame(state, makeInput({ interact: true }), 0.05);
+    expect(arena.tiles[2 * arena.width + 3]).toBe(TILE_DOOR_OPEN);
+    expect(state.doors.length).toBe(1);
+    expect(state.doors[0]?.openTimer).toBeCloseTo(DOOR_OPEN_DURATION, 1);
+
+    // Advance time past DOOR_OPEN_DURATION (100 steps * 0.05s = 5.0s > 4.5s)
+    for (let i = 0; i < 100; i += 1) {
+      updateGame(state, makeInput(), 0.05);
+    }
+
+    // Door auto-closes when unoccupied
+    expect(arena.tiles[2 * arena.width + 3]).toBe(TILE_DOOR_CLOSED);
+    expect(state.doors.length).toBe(0);
   });
 });

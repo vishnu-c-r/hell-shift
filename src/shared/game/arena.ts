@@ -3,6 +3,8 @@ import {
   ARENA_WIDTH,
   TILE_BONE,
   TILE_BRICK,
+  TILE_DOOR_CLOSED,
+  TILE_DOOR_OPEN,
   TILE_EMPTY,
   TILE_RUST,
 } from './constants';
@@ -71,7 +73,8 @@ export const tileAt = (arena: Arena, x: number, y: number): number => {
   return arena.tiles[tileIndex(arena, x, y)] ?? TILE_BRICK;
 };
 
-export const isSolidTile = (tile: number): boolean => tile !== TILE_EMPTY;
+export const isSolidTile = (tile: number): boolean =>
+  tile !== TILE_EMPTY && tile !== TILE_DOOR_OPEN;
 
 export const isSolidAt = (arena: Arena, x: number, y: number): boolean =>
   isSolidTile(tileAt(arena, x, y));
@@ -421,6 +424,9 @@ const createPickups = (
   }));
 };
 
+const isPassableForConnect = (tile: number): boolean =>
+  tile === TILE_EMPTY || tile === TILE_DOOR_CLOSED || tile === TILE_DOOR_OPEN;
+
 const connectAll = (arena: Arena): boolean => {
   const startX = Math.floor(arena.spawn.x);
   const startY = Math.floor(arena.spawn.y);
@@ -431,7 +437,7 @@ const connectAll = (arena: Arena): boolean => {
   let floorCount = 0;
 
   for (let index = 0; index < arena.tiles.length; index += 1) {
-    if (arena.tiles[index] === TILE_EMPTY) {
+    if (isPassableForConnect(arena.tiles[index] ?? 0)) {
       floorCount += 1;
     }
   }
@@ -460,7 +466,7 @@ const connectAll = (arena: Arena): boolean => {
         continue;
       }
       const index = ny * arena.width + nx;
-      if (visited[index] === 1 || arena.tiles[index] !== TILE_EMPTY) {
+      if (visited[index] === 1 || !isPassableForConnect(arena.tiles[index] ?? 0)) {
         continue;
       }
       visited[index] = 1;
@@ -469,6 +475,80 @@ const connectAll = (arena: Arena): boolean => {
   }
 
   return visitedCount === floorCount;
+};
+
+const addDoors = (arena: Arena, rng: Rng): void => {
+  const candidates: { x: number; y: number }[] = [];
+  const reserved = new Set<string>();
+
+  const spawnTileX = Math.floor(arena.spawn.x);
+  const spawnTileY = Math.floor(arena.spawn.y);
+  for (let dy = -2; dy <= 2; dy += 1) {
+    for (let dx = -2; dx <= 2; dx += 1) {
+      reserved.add(`${spawnTileX + dx}:${spawnTileY + dy}`);
+    }
+  }
+  for (const point of arena.spawnPoints) {
+    reserved.add(`${Math.floor(point.x)}:${Math.floor(point.y)}`);
+  }
+  for (const pickup of arena.pickups) {
+    reserved.add(`${Math.floor(pickup.x)}:${Math.floor(pickup.y)}`);
+  }
+
+  for (let y = 2; y < arena.height - 2; y += 1) {
+    for (let x = 2; x < arena.width - 2; x += 1) {
+      if (arena.tiles[tileIndex(arena, x, y)] !== TILE_EMPTY) {
+        continue;
+      }
+      if (reserved.has(`${x}:${y}`)) {
+        continue;
+      }
+
+      const horizontalDoorway =
+        isSolidAt(arena, x, y - 1) &&
+        isSolidAt(arena, x, y + 1) &&
+        !isSolidAt(arena, x - 1, y) &&
+        !isSolidAt(arena, x + 1, y);
+
+      const verticalDoorway =
+        isSolidAt(arena, x - 1, y) &&
+        isSolidAt(arena, x + 1, y) &&
+        !isSolidAt(arena, x, y - 1) &&
+        !isSolidAt(arena, x, y + 1);
+
+      if (horizontalDoorway || verticalDoorway) {
+        candidates.push({ x, y });
+      }
+    }
+  }
+
+  // Deterministic Fisher-Yates shuffle
+  const shuffled = [...candidates];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = rng.int(i + 1);
+    const temp = shuffled[i];
+    const target = shuffled[j];
+    if (temp && target) {
+      shuffled[i] = target;
+      shuffled[j] = temp;
+    }
+  }
+
+  const placed: { x: number; y: number }[] = [];
+  const maxDoors = Math.min(shuffled.length, 4 + rng.int(3));
+
+  for (const cand of shuffled) {
+    if (placed.length >= maxDoors) {
+      break;
+    }
+    const tooClose = placed.some(
+      (p) => Math.hypot(p.x - cand.x, p.y - cand.y) < 4
+    );
+    if (!tooClose) {
+      placed.push(cand);
+      arena.tiles[tileIndex(arena, cand.x, cand.y)] = TILE_DOOR_CLOSED;
+    }
+  }
 };
 
 const buildArena = (seed: number, name: string): Arena => {
@@ -500,6 +580,7 @@ const buildArena = (seed: number, name: string): Arena => {
   const floorTiles = collectFloorTiles(arena);
   arena.spawnPoints = selectSpreadPoints(floorTiles, 18, arena.spawn, 6);
   arena.pickups = createPickups(floorTiles, arena.spawn, arena.spawnPoints);
+  addDoors(arena, rng);
 
   return arena;
 };
@@ -517,7 +598,7 @@ export const isArenaConnected = (arena: Arena): boolean => connectAll(arena);
 export const countFloorTiles = (arena: Arena): number => {
   let count = 0;
   for (const tile of arena.tiles) {
-    if (tile === TILE_EMPTY) {
+    if (isPassableForConnect(tile)) {
       count += 1;
     }
   }

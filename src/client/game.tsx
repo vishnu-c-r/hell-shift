@@ -200,6 +200,7 @@ export const GameApp = () => {
           const prevKills = current.kills;
 
           updateGame(current, inputRef.current, fixedStep);
+          inputRef.current.interact = false;
           accumulatorRef.current -= fixedStep;
           steps += 1;
 
@@ -213,7 +214,9 @@ export const GameApp = () => {
           if (current.events.length > prevEventsCount) {
             const newEvents = current.events.slice(prevEventsCount);
             for (const evt of newEvents) {
-              if (evt.kind === 'kill') sound.playKill();
+              if (evt.text === 'BLAST DOOR OPENED') sound.playDoorOpen();
+              else if (evt.text === 'BLAST DOOR CLOSED') sound.playDoorClose();
+              else if (evt.kind === 'kill') sound.playKill();
               else if (evt.kind === 'pickup') sound.playPickup();
               else if (evt.kind === 'reload') sound.playReload();
               else if (evt.kind === 'empty') sound.playEmpty();
@@ -314,6 +317,10 @@ export const GameApp = () => {
         case 'r':
           input.reload = true;
           break;
+        case 'e':
+        case 'f':
+          input.interact = true;
+          break;
       }
     };
 
@@ -345,6 +352,10 @@ export const GameApp = () => {
           break;
         case 'r':
           input.reload = false;
+          break;
+        case 'e':
+        case 'f':
+          input.interact = false;
           break;
       }
     };
@@ -517,6 +528,9 @@ export const GameApp = () => {
                 inputRef.current.reload = false;
               }, 100);
             }}
+            onInteract={() => {
+              inputRef.current.interact = true;
+            }}
             audioMuted={audioMuted}
             onToggleAudio={handleToggleAudio}
           />
@@ -541,6 +555,10 @@ export const GameApp = () => {
                 setTimeout(() => {
                   inputRef.current.reload = false;
                 }, 100);
+              }}
+              canOpenDoor={gameState.canOpenDoor}
+              onInteract={() => {
+                inputRef.current.interact = true;
               }}
               onPause={() => setView('paused')}
             />

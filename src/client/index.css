@@ -467,6 +467,68 @@ button {
   }
 }
 
+/* Door interaction prompt */
+.hell-door-prompt {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(20, 12, 8, 0.94);
+  border: 2px solid var(--ember);
+  box-shadow: 0 0 16px rgba(240, 100, 42, 0.6), inset 0 0 8px rgba(240, 100, 42, 0.4);
+  padding: 8px 16px;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 30;
+  color: var(--bone);
+  font-family: inherit;
+  transition: transform 80ms ease, background 80ms ease;
+}
+
+.hell-door-prompt:hover {
+  background: #3a160a;
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.hell-door-prompt:active {
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+.hell-door-prompt-key {
+  color: var(--ember);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.hell-door-prompt-text {
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+/* Mobile touch door button */
+.hell-touch-door-btn {
+  width: 80px;
+  height: 44px;
+  background: #3e1b0c;
+  border: 2px solid var(--ember);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 10px rgba(240, 100, 42, 0.6);
+}
+
+.hell-touch-door-btn:active {
+  background: var(--ember);
+  transform: scale(0.92);
+}
+
 /* Event ticker */
 .hell-hud-events {
   position: absolute;

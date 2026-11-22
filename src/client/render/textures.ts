@@ -1,4 +1,9 @@
-import { TILE_BONE, TILE_BRICK, TILE_RUST } from '../../shared/game/constants';
+import {
+  TILE_BONE,
+  TILE_BRICK,
+  TILE_DOOR_CLOSED,
+  TILE_RUST,
+} from '../../shared/game/constants';
 
 export type Texture = {
   width: number;
@@ -78,8 +83,42 @@ const bone = makeTexture(16, 16, (x, y) => {
   return [151 + shade, 139 + shade, 113 + shade];
 });
 
+const door = makeTexture(16, 16, (x, y) => {
+  // Top & bottom diagonal hazard warning stripes
+  if (y <= 1 || y >= 14) {
+    const isYellow = (x + y) % 4 < 2;
+    return isYellow ? [235, 185, 25] : [24, 24, 28];
+  }
+
+  // Steel frame borders
+  if (x === 0 || x === 15) {
+    return [34, 36, 42];
+  }
+
+  // Center hydraulic lock housing and illuminated status LED
+  if (x >= 6 && x <= 9 && y >= 6 && y <= 9) {
+    if ((x === 7 || x === 8) && (y === 7 || y === 8)) {
+      return [250, 75, 20]; // Bright illuminated amber/red security lock beacon
+    }
+    return [30, 32, 38]; // Dark recessed lock chassis
+  }
+
+  // Vertical steel panel grooves
+  if (x === 4 || x === 11) {
+    return [26, 28, 34]; // Shadow groove
+  }
+  if (x === 5 || x === 12) {
+    return [115, 122, 136]; // Metallic bevel highlight
+  }
+
+  // Heavy steel door plating
+  const grain = Math.floor(noise(x, y, 43) * 18);
+  return [68 + grain, 74 + grain, 86 + grain];
+});
+
 export const wallTextures: Record<number, Texture> = {
   [TILE_BRICK]: brick,
   [TILE_RUST]: rust,
   [TILE_BONE]: bone,
+  [TILE_DOOR_CLOSED]: door,
 };

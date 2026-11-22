@@ -1,7 +1,9 @@
 import type { RunOutcome } from '../api';
-import type { Arena } from './arena';
+import { tileAt, type Arena } from './arena';
 import {
   AMMO_PICKUP_AMOUNT,
+  DOOR_INTERACT_DISTANCE,
+  DOOR_OPEN_DURATION,
   HEALTH_PICKUP_AMOUNT,
   HUSK,
   PLAYER_MAX_HEALTH,
@@ -10,6 +12,8 @@ import {
   PLAYER_TURN_SPEED,
   REPEATER,
   RUN_DURATION_SECONDS,
+  TILE_DOOR_CLOSED,
+  TILE_DOOR_OPEN,
   WAVE_BREAK_SECONDS,
   WAVE_COUNTS,
   WAVE_INTRO_SECONDS,
@@ -81,12 +85,20 @@ export type GameEvent = {
   ttl: number;
 };
 
+export type OpenDoorState = {
+  x: number;
+  y: number;
+  openTimer: number;
+};
+
 export type GameState = {
   arena: Arena;
   seed: number;
   player: PlayerState;
   enemies: EnemyState[];
   pickups: PickupState[];
+  doors: OpenDoorState[];
+  canOpenDoor: boolean;
   waveIndex: number;
   waveState: WaveState;
   waveTimer: number;
@@ -109,6 +121,7 @@ export type InputState = {
   lookDelta: number;
   shoot: boolean;
   reload: boolean;
+  interact?: boolean;
 };
 
 export type RunSummary = {
@@ -128,6 +141,7 @@ export const createInput = (): InputState => ({
   lookDelta: 0,
   shoot: false,
   reload: false,
+  interact: false,
 });
 
 const pushEvent = (
@@ -170,6 +184,8 @@ export const createGame = (arena: Arena, seed: number): GameState => ({
     active: true,
     phase: pickup.id * 1.37,
   })),
+  doors: [],
+  canOpenDoor: false,
   waveIndex: 0,
   waveState: 'intro',
   waveTimer: WAVE_INTRO_SECONDS,
@@ -507,6 +523,85 @@ const updateWaves = (state: GameState, dt: number): void => {
   }
 };
 
+export const findNearbyDoor = (
+  arena: Arena,
+  player: PlayerState,
+  maxDistance = DOOR_INTERACT_DISTANCE
+): { x: number; y: number; tile: number; distance: number } | null => {
+  const px = player.x;
+  const py = player.y;
+  const minX = Math.max(1, Math.floor(px - maxDistance));
+  const maxX = Math.min(arena.width - 2, Math.ceil(px + maxDistance));
+  const minY = Math.max(1, Math.floor(py - maxDistance));
+  const maxY = Math.min(arena.height - 2, Math.ceil(py + maxDistance));
+
+  let closest: { x: number; y: number; tile: number; distance: number } | null =
+    null;
+  for (let y = minY; y <= maxY; y += 1) {
+    for (let x = minX; x <= maxX; x += 1) {
+      const tile = tileAt(arena, x, y);
+      if (tile === TILE_DOOR_CLOSED || tile === TILE_DOOR_OPEN) {
+        const dist = Math.hypot(x + 0.5 - px, y + 0.5 - py);
+        if (dist <= maxDistance && (!closest || dist < closest.distance)) {
+          closest = { x, y, tile, distance: dist };
+        }
+      }
+    }
+  }
+  return closest;
+};
+
+const updateDoors = (
+  state: GameState,
+  input: InputState,
+  dt: number
+): void => {
+  const player = state.player;
+  const nearbyDoor = findNearbyDoor(state.arena, player);
+  state.canOpenDoor =
+    nearbyDoor !== null && nearbyDoor.tile === TILE_DOOR_CLOSED;
+
+  if (input.interact && nearbyDoor && nearbyDoor.tile === TILE_DOOR_CLOSED) {
+    const tileIdx = nearbyDoor.y * state.arena.width + nearbyDoor.x;
+    state.arena.tiles[tileIdx] = TILE_DOOR_OPEN;
+    state.doors.push({
+      x: nearbyDoor.x,
+      y: nearbyDoor.y,
+      openTimer: DOOR_OPEN_DURATION,
+    });
+    pushEvent(state, 'pickup', 'BLAST DOOR OPENED', 1.2);
+    state.canOpenDoor = false;
+  }
+
+  for (let i = state.doors.length - 1; i >= 0; i -= 1) {
+    const door = state.doors[i];
+    if (!door) {
+      continue;
+    }
+    door.openTimer -= dt;
+    if (door.openTimer <= 0) {
+      const playerDist = Math.hypot(
+        player.x - (door.x + 0.5),
+        player.y - (door.y + 0.5)
+      );
+      const enemyOnDoor = state.enemies.some(
+        (e) =>
+          e.alive &&
+          Math.hypot(e.x - (door.x + 0.5), e.y - (door.y + 0.5)) < 0.75
+      );
+
+      if (playerDist < 0.75 || enemyOnDoor) {
+        door.openTimer = 0.8;
+      } else {
+        const tileIdx = door.y * state.arena.width + door.x;
+        state.arena.tiles[tileIdx] = TILE_DOOR_CLOSED;
+        pushEvent(state, 'empty', 'BLAST DOOR CLOSED', 1.0);
+        state.doors.splice(i, 1);
+      }
+    }
+  }
+};
+
 export const updateGame = (
   state: GameState,
   input: InputState,
@@ -533,6 +628,8 @@ export const updateGame = (
   if (state.status !== 'playing') {
     return state;
   }
+
+  updateDoors(state, input, step);
 
   updateEnemies(state, step);
   if (state.status !== 'playing') {

@@ -28,6 +28,7 @@ We wanted:
   - **Centered Double-Barreled Shotgun**: Dual blued-steel barrels, brass bead sight, mahogany pump grip, and realistic figure-8 walking sway bobbing.
   - **Dynamic Lighting & Screen Shake**: Trigger pulls violently strobe the dark corridors, walls, and monster sprites with bright incandescent flashes, accompanied by screen shake and crimson pain vignettes when hit.
   - **Status Bar Marine Face Widget**: A retro pixel-art Marine in the HUD that grimaces in agony when wounded, flashes an evil grin while firing, glances left/right while idle, and progressively degrades across 5 visual damage tiers (Healthy $\to$ Bruised $\to$ Bloody $\to$ Mutilated $\to$ Dead).
+- **Interactive Pneumatic Blast Doors**: Heavy steel blast doors placed at strategic corridor bottlenecks with hazard caution stripes and hydraulic locks. Approaching a door displays an on-screen prompt **`[E] OPEN BLAST DOOR`** (with a dedicated **`[DOOR]`** button for mobile). Doors open with a procedural airlock release hiss, remain open for 4.5 seconds, and auto-cycle closed—allowing players to strategically funnel, trap, or escape incoming Husk swarms!
 - **Reddit-Native Leaderboards & Sharing**:
   - Scores are automatically submitted to a subreddit-scoped Devvit Redis leaderboard.
   - Features a **"Share Run to Reddit"** button that generates a formatted Reddit Markdown scorecard (with accuracy, waves cleared, and score) ready to paste into thread comments.
@@ -96,4 +97,4 @@ HELL SHIFT was engineered from the ground up to run inside Reddit's sandboxed if
   - Pickups for Chainsaw (close-range melee surge) and Plasma Rifle.
 - **Deterministic Replay Spectating**: Since all runs are seeded and deterministic, we can record player input sequences (~2KB) so users can click any leaderboard entry to watch a high-scorer’s run replayed tick-for-tick.
 - **Subreddit vs. Subreddit Tournaments**: Daily aggregate leaderboards pitting communities against each other (e.g., `r/gaming` vs `r/pcgaming`).
-- **Secret Doors & Sector Hazards**: Procedural acid pools, crushing industrial pistons, and hidden ammo caches embedded in arena walls.
+- **Sector Hazards & Destructible Secrets**: Procedural toxic acid pools, crushing industrial pistons, and destructible secret walls concealing emergency ammo caches.

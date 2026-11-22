@@ -8,6 +8,8 @@ export const TouchControls: FC<TouchControlsProps> = ({
   onFireEnd,
   onReload,
   onPause,
+  canOpenDoor = false,
+  onInteract,
 }) => {
   const lookAreaRef = useRef<HTMLDivElement | null>(null);
   const lastTouchXRef = useRef<number | null>(null);
@@ -181,8 +183,18 @@ export const TouchControls: FC<TouchControlsProps> = ({
         <span className="hell-touch-hint">SWIPE TO AIM</span>
       </div>
 
-      {/* Right action buttons: FIRE and RELOAD */}
+      {/* Right action buttons: FIRE, RELOAD, and optional DOOR */}
       <div className="hell-touch-actions">
+        {canOpenDoor && (
+          <button
+            type="button"
+            className="hell-touch-action-btn hell-touch-door-btn hell-pulse-alert"
+            onClick={onInteract}
+            aria-label="Open blast door"
+          >
+            DOOR
+          </button>
+        )}
         <button
           type="button"
           className="hell-touch-action-btn hell-touch-reload-btn"

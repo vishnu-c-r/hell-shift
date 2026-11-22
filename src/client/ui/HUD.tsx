@@ -20,6 +20,7 @@ export const HUD: FC<HudProps> = ({
   gameState,
   onPause,
   onReload,
+  onInteract,
   audioMuted = false,
   onToggleAudio,
 }) => {
@@ -120,6 +121,19 @@ export const HUD: FC<HudProps> = ({
           />
         )}
       </div>
+
+      {/* Door interaction prompt */}
+      {gameState.canOpenDoor && (
+        <button
+          type="button"
+          className="hell-door-prompt hell-pulse-alert"
+          onClick={onInteract}
+          aria-label="Open blast door"
+        >
+          <span className="hell-door-prompt-key">[E]</span>
+          <span className="hell-door-prompt-text">OPEN BLAST DOOR</span>
+        </button>
+      )}
 
       {/* Tactical event ticker */}
       <div className="hell-hud-events" aria-live="polite">

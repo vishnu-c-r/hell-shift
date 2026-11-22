@@ -312,6 +312,74 @@ class SoundSystem {
   }
 
   /**
+   * Blast door open: pneumatic airlock release hiss + heavy latch clunk
+   */
+  public playDoorOpen(): void {
+    if (this.muted || !this.init() || !this.ctx || !this.masterGain) return;
+    const now = this.ctx.currentTime;
+
+    // 1. Pneumatic air hiss
+    const bufferSize = Math.floor(this.ctx.sampleRate * 0.26);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.45));
+    }
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(2600, now);
+    filter.frequency.exponentialRampToValueAtTime(700, now + 0.26);
+    filter.Q.value = 2.0;
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.5, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.26);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.masterGain);
+    noise.start(now);
+
+    // 2. Mechanical latch clunk
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(240, now);
+    osc.frequency.exponentialRampToValueAtTime(55, now + 0.22);
+    oscGain.gain.setValueAtTime(0.4, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+    osc.connect(oscGain);
+    oscGain.connect(this.masterGain);
+    osc.start(now);
+    osc.stop(now + 0.22);
+  }
+
+  /**
+   * Blast door close: heavy industrial hydraulic slam
+   */
+  public playDoorClose(): void {
+    if (this.muted || !this.init() || !this.ctx || !this.masterGain) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(110, now);
+    osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+
+    gain.gain.setValueAtTime(0.45, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(now);
+    osc.stop(now + 0.2);
+  }
+
+  /**
    * Shift terminated / flatline: descending death drone
    */
   public playDefeat(): void {

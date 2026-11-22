@@ -5,8 +5,18 @@ export const TILE_EMPTY = 0;
 export const TILE_BRICK = 1;
 export const TILE_RUST = 2;
 export const TILE_BONE = 3;
+export const TILE_DOOR_CLOSED = 4;
+export const TILE_DOOR_OPEN = 5;
 
-export const WALL_MATERIALS = [TILE_BRICK, TILE_RUST, TILE_BONE] as const;
+export const DOOR_INTERACT_DISTANCE = 1.8;
+export const DOOR_OPEN_DURATION = 4.5;
+
+export const WALL_MATERIALS = [
+  TILE_BRICK,
+  TILE_RUST,
+  TILE_BONE,
+  TILE_DOOR_CLOSED,
+] as const;
 
 export const FOV = Math.PI / 3;
 export const PROJECTION_PLANE = Math.tan(FOV / 2);
