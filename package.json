@@ -1,13 +1,14 @@
 {
   "name": "hell-shift",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "BSD-3-Clause",
   "type": "module",
   "description": "One arena. One day. Survive the hell. A Reddit-native daily survival FPS.",
   "scripts": {
     "build": "vite build",
     "dev": "devvit playtest",
+    "preview": "node tools/preview-server.js",
     "deploy": "npm run verify && devvit upload",
     "launch": "npm run deploy && devvit publish",
     "login": "devvit login",
