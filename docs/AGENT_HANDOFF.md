@@ -221,4 +221,67 @@ Production Devvit bundle generated successfully to `dist/client` and `dist/serve
 
 User to execute `npm run login` to test live inside a test subreddit; then perform final polish on audio/sound effects and moderation controls.
 
+---
+
+## Session 004 — Antigravity — Mouse Controls Decoupling, Procedural 90s Web Audio & Reddit Scorecard Sharing
+
+### Completed
+
+- **Decoupled Mouse Aiming from Weapon Firing**:
+  - Resolved control conflict in `src/client/game.tsx` where clicking to drag-aim was simultaneously firing the gun and burning ammunition.
+  - Implemented standard Pointer Lock API support: clicking the arena engages cursor lock for natural, true FPS mouse-look.
+  - Implemented drag threshold fallback: dragging mouse rotates camera without firing; tap/click without drag fires a single shot.
+  - Disabled browser context menu during gameplay (`onContextMenu`).
+- **Zero-Asset Procedural Web Audio Engine (`src/client/audio/sound.ts`)**:
+  - Implemented authentic 1990s industrial audio synthesized in code via Web Audio API:
+    - Pulse repeater blast: White noise burst + decaying square wave low punch.
+    - Husk hit & death: FM squelch and deep descending death thud.
+    - Player hurt: Abrasive square-wave hazard alarm.
+    - Weapon reload: Dual metallic clicks.
+    - Empty chamber: Crisp dry tick.
+    - Supply pickup: Rising 3-tone cyber chime.
+    - Victory / Defeat: Industrial triumph chord / descending flatline drone.
+  - Handled browser autoplay policies with lazy audio context resume on user interaction.
+  - Added sound mute state with `localStorage` persistence (`hellshift:muted`).
+  - Added `[SFX / MUTE]` toggle button on HUD top bar and audio checkbox in the in-game Pause menu.
+- **Reddit Scorecard Sharing ("Wordle for Reddit")**:
+  - Added "SHARE RUN TO REDDIT" button in `GameOverModal.tsx`.
+  - Generates and copies clean, formatted Reddit Markdown scorecards ready to paste into community comments.
+  - Animated visual feedback ("✓ COPIED // PASTE IN REDDIT COMMENTS").
+- **Automatic Post Creation on App Installation**:
+  - Enhanced `/internal/triggers/on-app-install` in `src/server/index.ts` to automatically call `reddit.submitCustomPost()` when installed in a subreddit.
+- **Verification**:
+  - `tsc --build`: 0 errors.
+  - `vitest run`: 38/38 tests passed.
+  - `vite build`: Clean production bundle.
+  - `tools/smoke-test.js`: Verified all 8 viewports in real Chromium with 0 errors.
+
+### Files changed
+
+- `src/client/game.tsx`
+- `src/client/audio/sound.ts` (created)
+- `src/client/ui/types.ts`
+- `src/client/ui/HUD.tsx`
+- `src/client/ui/PauseMenu.tsx`
+- `src/client/ui/GameOverModal.tsx`
+- `src/client/index.css`
+- `src/server/index.ts`
+- `docs/KNOWN_ISSUES.md`
+- `docs/AGENT_HANDOFF.md`
+
+### Tests executed
+
+- `node node_modules/typescript/bin/tsc -b` — passed.
+- `node node_modules/vitest/vitest.mjs run` — 8 suites, 38 passed.
+- `npx vite build` — passed.
+- `node tools/smoke-test.js` — 8 viewports passed with 0 console errors.
+
+### Build status
+
+Production Devvit client and server bundles build cleanly.
+
+### Next recommended task
+
+Test live in Reddit (`npm run dev`) or test local preview (`npm run preview`) to audition synthesized sound effects and test scorecard clipboard copying.
+
 
