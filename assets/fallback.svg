@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <radialGradient id="fbBg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#4f1509"/>
+      <stop offset="45%" stop-color="#230a05"/>
+      <stop offset="85%" stop-color="#0c0503"/>
+      <stop offset="100%" stop-color="#050202"/>
+    </radialGradient>
+    <linearGradient id="wallGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2a160f"/>
+      <stop offset="50%" stop-color="#412418"/>
+      <stop offset="100%" stop-color="#1a0c07"/>
+    </linearGradient>
+    <pattern id="fbHazard" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="20" height="40" fill="#f0642a"/>
+      <rect x="20" width="20" height="40" fill="#140b07"/>
+    </pattern>
+    <filter id="fbShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000000" flood-opacity="0.95"/>
+    </filter>
+    <filter id="muzzleFlashGlow">
+      <feGaussianBlur stdDeviation="35" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Atmospheric 3D Maze Viewport -->
+  <rect width="1920" height="1080" fill="url(#fbBg)"/>
+
+  <!-- Left Arena Colonnade & Brick Walls -->
+  <polygon points="0,0 600,280 600,720 0,1080" fill="url(#wallGradient)" stroke="#5d2a1b" stroke-width="6"/>
+  <!-- Left Wall Brick Grid Lines -->
+  <g stroke="#1a0b06" stroke-width="4">
+    <line x1="150" y1="70" x2="150" y2="990"/>
+    <line x1="300" y1="140" x2="300" y2="900"/>
+    <line x1="450" y1="210" x2="450" y2="810"/>
+  </g>
+
+  <!-- Right Arena Colonnade & Brick Walls -->
+  <polygon points="1920,0 1320,280 1320,720 1920,1080" fill="url(#wallGradient)" stroke="#5d2a1b" stroke-width="6"/>
+  <g stroke="#1a0b06" stroke-width="4">
+    <line x1="1770" y1="70" x2="1770" y2="990"/>
+    <line x1="1620" y1="140" x2="1620" y2="900"/>
+    <line x1="1470" y1="210" x2="1470" y2="810"/>
+  </g>
+
+  <!-- Ceiling & Blood-stained Slag Floor -->
+  <polygon points="0,0 1920,0 1320,280 600,280" fill="#0f0705"/>
+  <polygon points="0,1080 1920,1080 1320,720 600,720" fill="#1e100b"/>
+
+  <!-- Blast Door Chamber in the Distance -->
+  <g filter="url(#fbShadow)">
+    <rect x="600" y="280" width="720" height="440" fill="#221612" stroke="#f0642a" stroke-width="8"/>
+    <!-- Hazard Stripes on Bulkhead -->
+    <rect x="600" y="280" width="720" height="48" fill="url(#fbHazard)"/>
+    <rect x="600" y="672" width="720" height="48" fill="url(#fbHazard)"/>
+    <!-- Center Blast Door Slit & Hydraulic Lock -->
+    <line x1="960" y1="328" x2="960" y2="672" stroke="#f0642a" stroke-width="6"/>
+    <circle cx="960" cy="500" r="48" fill="#e05615" stroke="#ffd152" stroke-width="6"/>
+    <circle cx="960" cy="500" r="20" fill="#fff5ea"/>
+  </g>
+
+  <!-- Lurking Husk Demons (Demonic Silhouettes with Glowing Eyes) -->
+  <!-- Left Husk -->
+  <g filter="url(#fbShadow)">
+    <circle cx="760" cy="540" r="38" fill="#140805" stroke="#8d2616" stroke-width="4"/>
+    <ellipse cx="760" cy="620" rx="46" ry="60" fill="#140805"/>
+    <circle cx="748" cy="535" r="7" fill="#ff2200"/>
+    <circle cx="772" cy="535" r="7" fill="#ff2200"/>
+  </g>
+  <!-- Right Husk -->
+  <g filter="url(#fbShadow)">
+    <circle cx="1160" cy="520" r="44" fill="#140805" stroke="#8d2616" stroke-width="4"/>
+    <ellipse cx="1160" cy="610" rx="52" ry="70" fill="#140805"/>
+    <circle cx="1146" cy="515" r="8" fill="#ff2200"/>
+    <circle cx="1174" cy="515" r="8" fill="#ff2200"/>
+  </g>
+
+  <!-- Centered Double-Barreled Shotgun with Dynamic Muzzle Smoke -->
+  <g filter="url(#fbShadow)">
+    <!-- Stock & Hands -->
+    <polygon points="840,1080 1080,1080 1030,880 890,880" fill="#3e1b0c" stroke="#1d0a04" stroke-width="6"/>
+    <!-- Receiver Housing -->
+    <rect x="890" y="810" width="140" height="80" rx="8" fill="#363c44" stroke="#1b1e22" stroke-width="6"/>
+    <!-- Left Barrel -->
+    <rect x="888" y="660" width="68" height="160" rx="6" fill="#4d5562" stroke="#1e2227" stroke-width="5"/>
+    <ellipse cx="922" cy="660" rx="28" ry="14" fill="#111316" stroke="#7b8492" stroke-width="5"/>
+    <ellipse cx="922" cy="660" rx="16" ry="8" fill="#040506"/>
+    <!-- Right Barrel -->
+    <rect x="964" y="660" width="68" height="160" rx="6" fill="#4d5562" stroke="#1e2227" stroke-width="5"/>
+    <ellipse cx="998" cy="660" rx="28" ry="14" fill="#111316" stroke="#7b8492" stroke-width="5"/>
+    <ellipse cx="998" cy="660" rx="16" ry="8" fill="#040506"/>
+    <!-- Brass Center Sight Bead -->
+    <circle cx="960" cy="656" r="8" fill="#ffd152" stroke="#b45309" stroke-width="3"/>
+  </g>
+
+  <!-- Muzzle Flash Crown (Dynamic Fire Halo) -->
+  <circle cx="960" cy="630" r="120" fill="#ff9922" opacity="0.35" filter="url(#muzzleFlashGlow)"/>
+  <circle cx="960" cy="640" r="60" fill="#ffee66" opacity="0.5" filter="url(#muzzleFlashGlow)"/>
+
+  <!-- TOP TRANSMISSION HUD BAR -->
+  <g filter="url(#fbShadow)">
+    <rect x="40" y="32" width="1840" height="76" rx="8" fill="#100a08" stroke="#482218" stroke-width="3"/>
+    <text x="70" y="78" font-family="'Courier New', monospace" font-size="28" font-weight="900" 
+          letter-spacing="4" fill="#f0642a">// DAILY SECTOR: THE FURNACE //</text>
+    <text x="1400" y="78" font-family="'Courier New', monospace" font-size="26" font-weight="700" 
+          letter-spacing="3" fill="#ffb49f">UTC RESET IN: 14H 22M 09S</text>
+  </g>
+
+  <!-- BOTTOM RETRO DOOM STATUS BAR HUD -->
+  <g filter="url(#fbShadow)">
+    <rect x="40" y="930" width="1840" height="118" rx="8" fill="#0d0806" stroke="#5a271a" stroke-width="4"/>
+    <rect x="48" y="938" width="1824" height="102" fill="#18100c" stroke="#2c140d" stroke-width="2"/>
+
+    <!-- 1. VITAL INTEGRITY CONSOLE -->
+    <g transform="translate(80, 946)">
+      <text x="0" y="24" font-family="'Courier New', monospace" font-size="16" font-weight="900" 
+            letter-spacing="2" fill="#8d7462">VITALITY</text>
+      <text x="0" y="78" font-family="'Courier New', monospace" font-size="56" font-weight="900" fill="#ff4422">100%</text>
+    </g>
+
+    <!-- 2. DOOM MARINE FACE WIDGET IN STATUS BAR -->
+    <g transform="translate(360, 946)">
+      <!-- Face Console Frame -->
+      <rect x="0" y="0" width="100" height="86" rx="4" fill="#100b08" stroke="#f0642a" stroke-width="3"/>
+      <!-- Marine Head (Buzz Cut & Jaw) -->
+      <polygon points="26,16 74,16 80,48 68,76 32,76 20,48" fill="#c49a78" stroke="#5a3822" stroke-width="2"/>
+      <!-- Brown Military Crew Cut Hair -->
+      <polygon points="24,14 76,14 74,28 26,28" fill="#4a2e1b"/>
+      <!-- Piercing Glancing Eyes -->
+      <rect x="32" y="36" width="12" height="7" fill="#ffffff"/>
+      <rect x="56" y="36" width="12" height="7" fill="#ffffff"/>
+      <rect x="36" y="37" width="5" height="5" fill="#205090"/>
+      <rect x="60" y="37" width="5" height="5" fill="#205090"/>
+      <!-- Gritted Evil Grin Teeth -->
+      <rect x="36" y="58" width="28" height="8" fill="#ffffff" stroke="#3a1a0e" stroke-width="2"/>
+      <line x1="44" y1="58" x2="44" y2="66" stroke="#3a1a0e" stroke-width="1.5"/>
+      <line x1="56" y1="58" x2="56" y2="66" stroke="#3a1a0e" stroke-width="1.5"/>
+      <!-- Battle Scar -->
+      <line x1="66" y1="24" x2="72" y2="44" stroke="#8d1810" stroke-width="2.5"/>
+    </g>
+
+    <!-- 3. AMMUNITION CONSOLE -->
+    <g transform="translate(580, 946)">
+      <text x="0" y="24" font-family="'Courier New', monospace" font-size="16" font-weight="900" 
+            letter-spacing="2" fill="#8d7462">BUCKSHOT</text>
+      <text x="0" y="78" font-family="'Courier New', monospace" font-size="56" font-weight="900" fill="#ffd152">12 / 72</text>
+    </g>
+
+    <!-- 4. WAVE TELEMETRY -->
+    <g transform="translate(980, 946)">
+      <text x="0" y="24" font-family="'Courier New', monospace" font-size="16" font-weight="900" 
+            letter-spacing="2" fill="#8d7462">HOSTILE WAVE</text>
+      <text x="0" y="78" font-family="'Courier New', monospace" font-size="56" font-weight="900" fill="#f0642a">WAVE 3/5</text>
+    </g>
+
+    <!-- 5. SCORE DISPLAY -->
+    <g transform="translate(1420, 946)">
+      <text x="0" y="24" font-family="'Courier New', monospace" font-size="16" font-weight="900" 
+            letter-spacing="2" fill="#8d7462">DAILY SCORE</text>
+      <text x="0" y="78" font-family="'Courier New', monospace" font-size="56" font-weight="900" fill="#fff5ea">3,450 PTS</text>
+    </g>
+  </g>
+
+  <!-- Big Watermark Logo In Top Right -->
+  <g filter="url(#fbShadow)" transform="translate(1320, 140)">
+    <rect x="0" y="0" width="520" height="96" rx="8" fill="#120a07" stroke="#e05615" stroke-width="4"/>
+    <text x="260" y="66" font-family="'Impact', 'Arial Black', sans-serif" font-size="58" font-weight="900" 
+          letter-spacing="3" fill="#f0541e" text-anchor="middle">HELL SHIFT</text>
+    <text x="260" y="62" font-family="'Impact', 'Arial Black', sans-serif" font-size="58" font-weight="900" 
+          letter-spacing="3" fill="#fff5ea" text-anchor="middle">HELL SHIFT</text>
+  </g>
+</svg>
