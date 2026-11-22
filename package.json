@@ -1,0 +1,51 @@
+{
+  "name": "hell-shift",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "description": "One arena. One day. Survive the hell. A Reddit-native daily survival FPS.",
+  "scripts": {
+    "build": "vite build",
+    "dev": "devvit playtest",
+    "deploy": "npm run verify && devvit upload",
+    "launch": "npm run deploy && devvit publish",
+    "login": "devvit login",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:types": "tsc --build",
+    "typecheck": "tsc --build",
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run build"
+  },
+  "engines": {
+    "node": ">=24.18.0"
+  },
+  "dependencies": {
+    "@devvit/start": "0.15.4",
+    "@devvit/web": "0.15.4",
+    "@hono/node-server": "2.1.6",
+    "devvit": "0.15.4",
+    "hono": "4.13.17",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "eslint": "10.14.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2",
+    "vite": "8.3.7",
+    "vitest": "5.1.1"
+  }
+}

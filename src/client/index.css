@@ -1,0 +1,1212 @@
+:root {
+  color-scheme: dark;
+  --ink: #0b0706;
+  --char: #17100d;
+  --panel-bg: #150e0b;
+  --panel-border: #44271c;
+  --ash: #b9a794;
+  --bone: #e8dcc8;
+  --blood: #c8321e;
+  --blood-glow: rgba(200, 50, 30, 0.45);
+  --ember: #f0642a;
+  --ember-glow: rgba(240, 100, 42, 0.4);
+  --rust: #7a3b25;
+  --acid: #b7c46a;
+  --acid-glow: rgba(183, 196, 106, 0.35);
+  font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  background: var(--ink);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  color: var(--bone);
+}
+
+button {
+  font: inherit;
+}
+
+/* ==========================================================================
+   SHELL & PANELS
+   ========================================================================== */
+
+.hell-shell {
+  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background:
+    radial-gradient(circle at 50% 15%, #3a140d 0%, transparent 60%),
+    repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      transparent 1px 3px),
+    var(--ink);
+  overflow-y: auto;
+}
+
+.hell-panel {
+  width: min(680px, 100%);
+  border: 2px solid var(--panel-border);
+  background: linear-gradient(180deg, #1c120e 0%, #0e0907 100%);
+  box-shadow:
+    0 0 0 4px #090504,
+    0 24px 80px rgba(0, 0, 0, 0.85);
+  padding: clamp(18px, 4vw, 36px);
+  position: relative;
+}
+
+.hell-kicker {
+  margin: 0 0 8px;
+  color: var(--ember);
+  letter-spacing: 0.28em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.hell-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 9vw, 5.2rem);
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+  color: var(--bone);
+  text-shadow:
+    3px 3px 0 var(--blood),
+    6px 6px 0 #2a0d08;
+}
+
+.hell-tagline {
+  margin: 16px 0 0;
+  color: var(--ash);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.hell-rule {
+  height: 2px;
+  margin: 20px 0;
+  background: repeating-linear-gradient(90deg,
+      var(--rust) 0 12px,
+      transparent 12px 18px);
+}
+
+.hell-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+}
+
+.hell-stat {
+  border: 1px solid #3d281f;
+  background: #120c09;
+  padding: 10px 12px;
+}
+
+.hell-stat span {
+  display: block;
+  color: #8d7462;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hell-stat strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.05rem;
+  color: var(--bone);
+}
+
+.hell-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border: 1px solid #ff9a63;
+  background: linear-gradient(180deg, var(--ember), var(--blood));
+  color: #fff4e8;
+  padding: 14px 18px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #5d170d;
+  transition: transform 80ms ease, box-shadow 80ms ease, background 120ms ease;
+  min-height: 48px;
+}
+
+.hell-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 0 #5d170d;
+  filter: brightness(1.1);
+}
+
+.hell-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #5d170d;
+}
+
+.hell-button:disabled {
+  cursor: wait;
+  filter: grayscale(0.6);
+  opacity: 0.6;
+}
+
+.hell-button-primary {
+  background: linear-gradient(180deg, var(--ember), var(--blood));
+}
+
+.hell-button-secondary {
+  border: 1px solid #5a3729;
+  background: linear-gradient(180deg, #2b1a14, #180f0c);
+  color: var(--ash);
+  box-shadow: 0 4px 0 #0d0806;
+}
+
+.hell-button-secondary:hover {
+  color: var(--bone);
+  border-color: #8a4f38;
+}
+
+.hell-button-danger {
+  border: 1px solid #ff5533;
+  background: linear-gradient(180deg, #991c0e, #550f07);
+  box-shadow: 0 4px 0 #2a0703;
+}
+
+.hell-note {
+  margin: 14px 0 0;
+  color: #8d7462;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.hell-error {
+  margin-top: 14px;
+  border-left: 3px solid var(--blood);
+  background: #2a0d08;
+  padding: 8px 10px;
+  color: #ffb49f;
+  font-size: 0.78rem;
+}
+
+/* ==========================================================================
+   GAME CONTAINER & CANVAS
+   ========================================================================== */
+
+.hell-game-viewport {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.hell-game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+/* ==========================================================================
+   CRT OVERLAY & SCANLINES
+   ========================================================================== */
+
+.hell-crt-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.hell-crt-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, 0.28) 0px,
+      rgba(0, 0, 0, 0.28) 1px,
+      transparent 1px,
+      transparent 3px);
+  opacity: 0.85;
+}
+
+.hell-crt-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85);
+  background: radial-gradient(circle, transparent 65%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.hell-crt-flicker {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 120, 50, 0.015);
+  animation: hell-flicker 0.15s infinite;
+}
+
+@keyframes hell-flicker {
+  0% {
+    opacity: 0.95;
+  }
+
+  50% {
+    opacity: 1.05;
+  }
+
+  100% {
+    opacity: 0.98;
+  }
+}
+
+/* ==========================================================================
+   HUD (HEADS-UP DISPLAY)
+   ========================================================================== */
+
+.hell-hud-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  z-index: 20;
+}
+
+.hell-hud-topbar,
+.hell-hud-bottombar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hell-hud-topbar {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.hell-hud-chip {
+  background: rgba(18, 12, 9, 0.88);
+  border: 1px solid var(--panel-border);
+  padding: 6px 12px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+}
+
+.hell-hud-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: #8d7462;
+  text-transform: uppercase;
+}
+
+.hell-hud-value {
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  color: var(--bone);
+  font-weight: 700;
+}
+
+.hell-hud-subtext {
+  font-size: 0.62rem;
+  color: var(--ember);
+  letter-spacing: 0.1em;
+}
+
+.hell-hud-pause-btn {
+  background: #20130d;
+  border: 1px solid var(--rust);
+  color: var(--bone);
+  padding: 8px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #0d0806;
+}
+
+.hell-hud-pause-btn:hover {
+  background: #341f16;
+  border-color: var(--ember);
+}
+
+/* Center crosshair & hitmarker */
+.hell-hud-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+
+.hell-crosshair-bar {
+  position: absolute;
+  background: rgba(232, 220, 200, 0.75);
+}
+
+.hell-crosshair-top {
+  top: 0;
+  left: 13px;
+  width: 2px;
+  height: 8px;
+}
+
+.hell-crosshair-bottom {
+  bottom: 0;
+  left: 13px;
+  width: 2px;
+  height: 8px;
+}
+
+.hell-crosshair-left {
+  top: 13px;
+  left: 0;
+  width: 8px;
+  height: 2px;
+}
+
+.hell-crosshair-right {
+  top: 13px;
+  right: 0;
+  width: 8px;
+  height: 2px;
+}
+
+.hell-crosshair-dot {
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  width: 2px;
+  height: 2px;
+  background: var(--ember);
+}
+
+.hell-hitmarker {
+  position: absolute;
+  inset: -6px;
+  background:
+    linear-gradient(45deg, transparent 44%, var(--blood) 45%, var(--blood) 55%, transparent 56%),
+    linear-gradient(-45deg, transparent 44%, var(--blood) 45%, var(--blood) 55%, transparent 56%);
+  animation: hell-hitmarker-anim 0.12s ease-out;
+}
+
+@keyframes hell-hitmarker-anim {
+  0% {
+    transform: scale(1.4);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Event ticker */
+.hell-hud-events {
+  position: absolute;
+  top: 70px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 280px;
+  pointer-events: none;
+}
+
+.hell-event-item {
+  background: rgba(14, 9, 7, 0.88);
+  border-left: 3px solid var(--ember);
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--bone);
+  text-transform: uppercase;
+  animation: hell-event-fadein 0.15s ease-out;
+}
+
+.hell-event-kill {
+  border-color: var(--blood);
+  color: #ff9885;
+}
+
+.hell-event-wave,
+.hell-event-wave-clear {
+  border-color: var(--ember);
+  color: #ffd19a;
+}
+
+.hell-event-hurt {
+  border-color: var(--blood);
+  color: #ff5544;
+}
+
+.hell-event-pickup {
+  border-color: var(--acid);
+  color: #d4e680;
+}
+
+.hell-event-reload,
+.hell-event-empty {
+  border-color: #888;
+  color: #bbb;
+}
+
+@keyframes hell-event-fadein {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Screen flash vignettes */
+.hell-damage-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 120px var(--blood);
+  background: radial-gradient(circle, transparent 40%, rgba(200, 50, 30, 0.4) 100%);
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 80ms ease;
+}
+
+.hell-muzzle-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 60%, rgba(255, 230, 180, 0.3) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 9;
+}
+
+/* Bottom status consoles */
+.hell-hud-bottombar {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.hell-hud-console-block {
+  background: rgba(18, 12, 9, 0.92);
+  border: 1px solid var(--panel-border);
+  padding: 10px 14px;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.hell-vital-header,
+.hell-ammo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.hell-vital-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--bone);
+}
+
+.hell-gauge-track {
+  height: 10px;
+  background: #110906;
+  border: 1px solid #331b12;
+  overflow: hidden;
+  padding: 1px;
+}
+
+.hell-gauge-fill {
+  height: 100%;
+  transition: width 100ms ease;
+}
+
+.hell-gauge-health {
+  background: linear-gradient(90deg, #c8321e 0%, #f0642a 40%, #b7c46a 100%);
+}
+
+.hell-gauge-critical {
+  background: var(--blood);
+  animation: hell-vital-flash 0.5s infinite;
+}
+
+.hell-vital-alert {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--blood);
+  letter-spacing: 0.15em;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.hell-ammo-display {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.hell-ammo-mag {
+  display: flex;
+  align-items: baseline;
+}
+
+.hell-ammo-big {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ember);
+}
+
+.hell-ammo-divider {
+  margin: 0 4px;
+  color: #664332;
+  font-size: 1.2rem;
+}
+
+.hell-ammo-max {
+  font-size: 0.95rem;
+  color: #9f7d6a;
+}
+
+.hell-ammo-reserve {
+  display: flex;
+  flex-direction: column;
+}
+
+.hell-hud-sublabel {
+  font-size: 0.52rem;
+  color: #775240;
+  letter-spacing: 0.18em;
+}
+
+.hell-reserve-val {
+  font-size: 0.95rem;
+  color: var(--bone);
+  font-weight: 700;
+}
+
+.hell-ammo-reload-btn {
+  background: #2b170f;
+  border: 1px solid var(--rust);
+  color: var(--bone);
+  padding: 4px 8px;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.hell-pulse-alert {
+  animation: hell-pulse 0.7s infinite alternate;
+  color: #ff4433 !important;
+}
+
+@keyframes hell-pulse {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 1;
+    text-shadow: 0 0 8px var(--blood);
+  }
+}
+
+@keyframes hell-vital-flash {
+  0% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* ==========================================================================
+   MODALS (BRIEFING, GAMEOVER, LEADERBOARD, PAUSE)
+   ========================================================================== */
+
+.hell-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 7, 6, 0.88);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 50;
+  overflow-y: auto;
+}
+
+.hell-briefing-modal,
+.hell-gameover-modal,
+.hell-leaderboard-modal,
+.hell-pause-modal {
+  width: min(660px, 100%);
+  border: 2px solid var(--panel-border);
+  background: linear-gradient(180deg, #1b110d 0%, #0c0806 100%);
+  box-shadow:
+    0 0 0 4px #090504,
+    0 24px 80px rgba(0, 0, 0, 0.95);
+  padding: clamp(16px, 3.5vw, 32px);
+  position: relative;
+}
+
+.hell-hazard-stripes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(-45deg,
+      var(--ember),
+      var(--ember) 8px,
+      #180e0a 8px,
+      #180e0a 16px);
+}
+
+.hell-modal-title {
+  margin: 4px 0 0;
+  font-size: clamp(1.8rem, 6vw, 3.2rem);
+  color: var(--bone);
+  letter-spacing: -0.04em;
+  text-shadow: 2px 2px 0 var(--blood);
+}
+
+.hell-briefing-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.hell-stat-cell {
+  background: #110b08;
+  border: 1px solid #362218;
+  padding: 8px 10px;
+}
+
+.hell-stat-label {
+  display: block;
+  font-size: 0.58rem;
+  color: #8d7462;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hell-stat-value {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--bone);
+  margin-top: 3px;
+}
+
+.hell-highlight-ember {
+  color: var(--ember) !important;
+}
+
+.hell-briefing-section-title {
+  font-size: 0.78rem;
+  color: var(--ash);
+  letter-spacing: 0.16em;
+  margin: 12px 0 8px;
+}
+
+.hell-briefing-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.hell-briefing-list li {
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #c9b9a6;
+}
+
+.hell-bullet {
+  color: var(--ember);
+  margin-right: 8px;
+  font-weight: 700;
+}
+
+.hell-controls-legend {
+  background: #120b08;
+  border: 1px solid #2e1c14;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.hell-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.hell-ctrl-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.hell-ctrl-keys {
+  font-size: 0.75rem;
+  color: var(--bone);
+  font-weight: 700;
+}
+
+.hell-ctrl-action {
+  font-size: 0.65rem;
+  color: #8d7462;
+}
+
+.hell-pb-notice {
+  background: #1b100b;
+  border-left: 3px solid var(--ember);
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.hell-briefing-actions,
+.hell-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* GameOver score rollup */
+.hell-score-rollup {
+  background: #120b08;
+  border: 1px solid #44271c;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.hell-score-giant {
+  display: block;
+  font-size: clamp(2.6rem, 8vw, 4.4rem);
+  line-height: 1;
+  color: var(--ember);
+  text-shadow: 2px 2px 0 var(--blood);
+  margin: 6px 0;
+}
+
+.hell-score-unit {
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  color: #8d7462;
+}
+
+.hell-breakdown-section {
+  margin-bottom: 16px;
+}
+
+.hell-breakdown-title {
+  font-size: 0.72rem;
+  color: #8d7462;
+  letter-spacing: 0.2em;
+  margin: 0 0 6px;
+}
+
+.hell-breakdown-table {
+  background: #0f0907;
+  border: 1px solid #2e1c14;
+}
+
+.hell-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #1c110c;
+  font-size: 0.78rem;
+}
+
+.hell-breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.hell-row-calc {
+  font-weight: 700;
+  color: var(--bone);
+}
+
+.hell-standing-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.hell-standing-cell {
+  background: #110b08;
+  border: 1px solid #362218;
+  padding: 8px 10px;
+}
+
+.hell-standing-val {
+  display: block;
+  font-size: 1.05rem;
+  color: var(--bone);
+  margin-top: 4px;
+}
+
+/* Leaderboard */
+.hell-leaderboard-wrap {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #362218;
+  margin-bottom: 16px;
+}
+
+.hell-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.hell-leaderboard-table th {
+  background: #180e0a;
+  color: #8d7462;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.hell-th-score {
+  text-align: right !important;
+}
+
+.hell-leaderboard-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #1c110c;
+}
+
+.hell-lb-row:hover {
+  background: #1c110c;
+}
+
+.hell-lb-current {
+  background: #2b160e !important;
+  border-left: 3px solid var(--ember);
+}
+
+.hell-rank-badge {
+  font-weight: 700;
+  color: var(--ash);
+}
+
+.hell-lb-top1 .hell-rank-badge {
+  color: #f5b041;
+}
+
+.hell-lb-top2 .hell-rank-badge {
+  color: #bdc3c7;
+}
+
+.hell-lb-top3 .hell-rank-badge {
+  color: #d35400;
+}
+
+.hell-agent-name {
+  color: var(--bone);
+}
+
+.hell-you-tag {
+  margin-left: 8px;
+  font-size: 0.58rem;
+  background: var(--ember);
+  color: #110705;
+  padding: 1px 5px;
+  font-weight: 700;
+}
+
+.hell-td-score {
+  text-align: right;
+}
+
+.hell-score-num {
+  font-size: 0.95rem;
+  color: var(--ember);
+}
+
+.hell-score-pts {
+  font-size: 0.6rem;
+  color: #8d7462;
+  margin-left: 4px;
+}
+
+.hell-leaderboard-empty {
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.hell-empty-headline {
+  color: var(--ember);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  margin: 0 0 6px;
+}
+
+.hell-empty-sub {
+  color: #8d7462;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+/* Pause menu options */
+.hell-pause-options {
+  margin: 16px 0;
+}
+
+.hell-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--ash);
+}
+
+.hell-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ember);
+}
+
+/* ==========================================================================
+   MOBILE TOUCH CONTROLS
+   ========================================================================== */
+
+.hell-touch-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+
+.hell-touch-pause {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  pointer-events: auto;
+  background: rgba(28, 17, 13, 0.9);
+  border: 1px solid var(--rust);
+  color: var(--bone);
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+}
+
+.hell-touch-dpad {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hell-dpad-mid {
+  display: flex;
+  align-items: center;
+}
+
+.hell-dpad-center {
+  width: 44px;
+  height: 44px;
+  background: rgba(20, 12, 9, 0.85);
+  border: 1px solid #362218;
+}
+
+.hell-dpad-btn {
+  width: 48px;
+  height: 48px;
+  background: rgba(30, 18, 14, 0.9);
+  border: 1px solid var(--rust);
+  color: var(--bone);
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hell-dpad-btn:active {
+  background: var(--ember);
+  color: #110705;
+}
+
+.hell-touch-aim-zone {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  bottom: 120px;
+  width: 50vw;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hell-touch-hint {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+}
+
+.hell-touch-actions {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hell-touch-action-btn {
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hell-touch-fire-btn {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(180deg, var(--ember), var(--blood));
+  border: 2px solid #ff9a63;
+  color: #fff4e8;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 12px rgba(200, 50, 30, 0.6);
+}
+
+.hell-touch-fire-btn:active {
+  transform: scale(0.94);
+  background: var(--blood);
+}
+
+.hell-touch-reload-btn {
+  width: 80px;
+  height: 44px;
+  background: #2b170f;
+  border: 1px solid var(--rust);
+  color: var(--bone);
+  font-size: 0.75rem;
+}
+
+.hell-touch-reload-btn:active {
+  background: #442518;
+}
+
+/* Touch layout positioning when on-screen controls are active */
+.has-touch-controls .hell-hud-bottombar {
+  position: absolute;
+  bottom: 170px;
+  left: 14px;
+  right: 14px;
+  width: auto;
+  pointer-events: none;
+  justify-content: space-between;
+}
+
+@media (min-width: 601px) and (orientation: landscape) {
+  .has-touch-controls .hell-hud-bottombar {
+    bottom: 16px;
+    left: 175px;
+    right: 115px;
+    width: auto;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVENESS & ACCESSIBILITY
+   ========================================================================== */
+
+@media (max-width: 600px) {
+  .hell-hud-topbar {
+    gap: 6px;
+  }
+
+  .hell-hud-chip {
+    padding: 4px 8px;
+  }
+
+  .hell-hud-value {
+    font-size: 0.95rem;
+  }
+
+  .hell-hud-bottombar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .hell-hud-console-block {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .hell-crt-flicker {
+    display: none !important;
+  }
+}
