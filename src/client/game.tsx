@@ -50,21 +50,16 @@ export const GameApp = () => {
   const lastTimeRef = useRef<number>(0);
   const accumulatorRef = useRef<number>(0);
   const gameStateRef = useRef<GameState | null>(null);
-  const initDataRef = useRef<InitResponse | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
   const isDraggingRef = useRef<boolean>(false);
   const dragStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const hasDraggedRef = useRef<boolean>(false);
   const isPointerLockedRef = useRef<boolean>(false);
 
-  // Keep refs updated for the animation frame loop and async score submission
+  // Keep ref updated for the animation frame loop
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
-
-  useEffect(() => {
-    initDataRef.current = initData;
-  }, [initData]);
 
   // Initialize daily arena info from server or deterministic fallback
   useEffect(() => {
@@ -125,44 +120,44 @@ export const GameApp = () => {
   }, [initData]);
 
   // Submit score to server if finished
-  const submitScore = useCallback(async (summary: RunSummary) => {
-    const currentInit = initDataRef.current;
-    const dayKey = currentInit?.daily.dayKey ?? getDailyInfo(new Date()).dayKey;
-    try {
-      const response = await fetch('/api/score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dayKey,
-          score: summary.score,
-          kills: summary.kills,
-          shotsFired: summary.shotsFired,
-          shotsHit: summary.shotsHit,
-          durationMs: summary.durationMs,
-          outcome: summary.outcome,
-        }),
-      });
+  const submitScore = useCallback(
+    async (summary: RunSummary) => {
+      if (!initData) return;
+      try {
+        const response = await fetch('/api/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dayKey: initData.daily.dayKey,
+            score: summary.score,
+            kills: summary.kills,
+            shotsFired: summary.shotsFired,
+            shotsHit: summary.shotsHit,
+            durationMs: summary.durationMs,
+            outcome: summary.outcome,
+          }),
+        });
 
-      if (!response.ok) {
-        return;
+        if (response.ok) {
+          const result: ScoreResponse = await response.json();
+          setInitData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  personalBest: result.personalBest,
+                  rank: result.rank,
+                  totalPlayers: result.totalPlayers,
+                  leaderboard: result.leaderboard,
+                }
+              : prev
+          );
+        }
+      } catch {
+        // Best effort submission; the run remains playable offline.
       }
-
-      const result: ScoreResponse = await response.json();
-      setInitData((previous) =>
-        previous === null
-          ? previous
-          : {
-              ...previous,
-              personalBest: result.personalBest,
-              rank: result.rank,
-              totalPlayers: result.totalPlayers,
-              leaderboard: result.leaderboard,
-            }
-      );
-    } catch {
-      // Best effort submission; the run remains playable offline.
-    }
-  }, []);
+    },
+    [initData]
+  );
 
   // Main simulation & render loop
   useEffect(() => {
