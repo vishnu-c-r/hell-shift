@@ -52,7 +52,10 @@ export const GameApp = () => {
   const gameStateRef = useRef<GameState | null>(null);
   const initDataRef = useRef<InitResponse | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
-  const dragRef = useRef<boolean>(false);
+  const isDraggingRef = useRef<boolean>(false);
+  const dragStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const hasDraggedRef = useRef<boolean>(false);
+  const isPointerLockedRef = useRef<boolean>(false);
 
   // Keep refs updated for the animation frame loop and async score submission
   useEffect(() => {
@@ -235,6 +238,13 @@ export const GameApp = () => {
       if (e.repeat) return;
 
       if (e.key === 'Escape') {
+        if (document.pointerLockElement) {
+          try {
+            document.exitPointerLock?.();
+          } catch {
+            // Ignore error
+          }
+        }
         if (view === 'playing') {
           setView('paused');
         } else if (view === 'paused') {
@@ -316,42 +326,123 @@ export const GameApp = () => {
     };
   }, [view]);
 
-  // Mouse firing and drag-to-turn listeners on the viewport
+  // Listen for pointer lock changes and mouse movement during pointer lock
+  useEffect(() => {
+    const handleDocumentMouseMove = (e: MouseEvent) => {
+      if (view === 'playing' && document.pointerLockElement === canvasRef.current) {
+        inputRef.current.lookDelta += clamp(e.movementX * 0.003, -0.35, 0.35);
+      }
+    };
+
+    const handlePointerLockChange = () => {
+      isPointerLockedRef.current = document.pointerLockElement === canvasRef.current;
+      if (!isPointerLockedRef.current) {
+        inputRef.current.shoot = false;
+        isDraggingRef.current = false;
+        hasDraggedRef.current = false;
+      }
+    };
+
+    document.addEventListener('mousemove', handleDocumentMouseMove);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
+    return () => {
+      document.removeEventListener('mousemove', handleDocumentMouseMove);
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
+    };
+  }, [view]);
+
+  // Viewport mouse interactions:
+  // - In pointer lock mode: moving mouse looks around; left click fires gun.
+  // - In drag fallback mode: dragging mouse aims/turns camera WITHOUT firing.
+  //   A clean click (press & release without drag) fires a single shot.
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      if (view !== 'playing' || e.button !== 0) {
+      if (view !== 'playing') {
         return;
       }
-      dragRef.current = true;
-      inputRef.current.shoot = true;
+
+      // If already pointer locked, left click fires
+      if (isPointerLockedRef.current) {
+        if (e.button === 0) {
+          inputRef.current.shoot = true;
+        }
+        return;
+      }
+
+      // If not pointer locked, request pointer lock on canvas click
+      if (e.button === 0 && canvasRef.current && document.pointerLockElement !== canvasRef.current) {
+        try {
+          const promise = canvasRef.current.requestPointerLock?.() as unknown;
+          if (promise && typeof (promise as Promise<void>).catch === 'function') {
+            (promise as Promise<void>).catch(() => {
+              // Ignore pointer lock rejection (e.g. synthetic event or iframe sandbox constraints)
+            });
+          }
+        } catch {
+          // Ignore pointer lock rejection
+        }
+      }
+
+      // Start drag tracking for aim/turn
+      if (e.button === 0 || e.button === 2) {
+        isDraggingRef.current = true;
+        hasDraggedRef.current = false;
+        dragStartPosRef.current = { x: e.clientX, y: e.clientY };
+      }
     },
     [view]
   );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (view !== 'playing' || !dragRef.current || (e.buttons & 1) === 0) {
+      if (view !== 'playing' || isPointerLockedRef.current) {
         return;
       }
-      inputRef.current.lookDelta += clamp(e.movementX * 0.004, -0.35, 0.35);
+
+      if (isDraggingRef.current) {
+        const dist = Math.hypot(
+          e.clientX - dragStartPosRef.current.x,
+          e.clientY - dragStartPosRef.current.y
+        );
+        if (dist > 4) {
+          hasDraggedRef.current = true;
+          inputRef.current.lookDelta += clamp(e.movementX * 0.004, -0.35, 0.35);
+        }
+      }
     },
     [view]
   );
 
   const handleMouseUp = useCallback(
     (e: React.MouseEvent) => {
-      if (e.button !== 0) {
+      if (isPointerLockedRef.current) {
+        if (e.button === 0) {
+          inputRef.current.shoot = false;
+        }
         return;
       }
-      dragRef.current = false;
-      inputRef.current.shoot = false;
+
+      if (isDraggingRef.current) {
+        // If the mouse was released without dragging, register a single shot
+        if (e.button === 0 && !hasDraggedRef.current) {
+          inputRef.current.shoot = true;
+          setTimeout(() => {
+            inputRef.current.shoot = false;
+          }, 40);
+        }
+        isDraggingRef.current = false;
+        hasDraggedRef.current = false;
+      }
     },
     []
   );
 
   const handleMouseLeave = useCallback(() => {
-    dragRef.current = false;
-    inputRef.current.shoot = false;
+    if (!isPointerLockedRef.current) {
+      isDraggingRef.current = false;
+      hasDraggedRef.current = false;
+      inputRef.current.shoot = false;
+    }
   }, []);
 
   // Fallback daily data
@@ -365,6 +456,11 @@ export const GameApp = () => {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
+      onContextMenu={(e) => {
+        if (view === 'playing') {
+          e.preventDefault();
+        }
+      }}
     >
       {/* 2.5D Canvas Viewport */}
       <canvas
