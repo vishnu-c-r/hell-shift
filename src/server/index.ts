@@ -147,8 +147,25 @@ app.post('/internal/menu/post-create', async (c) => {
   }
 });
 
-app.post('/internal/triggers/on-app-install', (c) => {
-  console.log(`HELL SHIFT installed in subreddit: ${context.subredditName ?? 'unknown'}`);
+app.post('/internal/triggers/on-app-install', async (c) => {
+  const subredditName = context.subredditName;
+  console.log(`HELL SHIFT installed in subreddit: ${subredditName ?? 'unknown'}`);
+
+  if (subredditName) {
+    try {
+      const now = new Date();
+      const daily = getDailyInfo(now);
+      const post = await reddit.submitCustomPost({
+        subredditName,
+        title: `HELL SHIFT — Daily Survival Arena [Day #${daily.dayNumber}: ${daily.arenaName}]`,
+        entry: 'splash.html',
+      });
+      console.log(`HELL SHIFT auto-created daily arena post: ${post.id}`);
+    } catch (err) {
+      console.error('Failed to auto-create post on installation:', err);
+    }
+  }
+
   return c.json({ status: 'ok' });
 });
 
