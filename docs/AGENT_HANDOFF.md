@@ -349,5 +349,69 @@ Production Devvit client and server bundles build cleanly.
 
 Deploy or playtest on Reddit via `npm run dev` or interactive `npm run preview`.
 
+---
+
+## Session 006 — Antigravity & OpenCode — Launch Submission & Marketing Assets
+
+### Completed
+
+- **Interactive Pneumatic Blast Doors**:
+  - Added `TILE_DOOR_CLOSED = 4` and `TILE_DOOR_OPEN = 5` into BSP arena generation at corridor bottlenecks.
+  - Implemented proximity detection (`[E]` / `[F]` on desktop, `[DOOR]` on mobile) with procedural caution textures, audio hisses, and 4.5s auto-close cycles with anti-crush safety.
+  - Added unit test in `src/shared/game/simulation.test.ts` bringing the test suite to 39 passing tests.
+
+- **Reddit Games Guidelines & Devvit Review Hardening**:
+  - Eliminated potential inline webview scroll traps: created `.hell-splash-shell` with `overflow: hidden`, `touch-action: pan-y`, and responsive padding to ensure zero internal scrollbars on Reddit feeds.
+  - Rewrote root `README.md` to full Devvit Review standards (<1,000 words, player controls table, moderator install and posting guide, v1.0.0 release notes). Bumped `package.json` to `1.0.0`.
+
+- **In-App Catalog Promotional Assets Suite (`assets/`)**:
+  - Programmatically rendered and delivered high-resolution marketing assets using headless Chromium:
+    - Master Promotional Icon: `assets/icon.png` (1024 × 1024 px PNG)
+    - Discovery Tile: `assets/tile.png` (800 × 600 px PNG)
+    - Fallback Graphic: `assets/fallback.png` (1920 × 1080 px PNG)
+    - Fallback Video Trailer: `assets/fallback_video.mp4` (1280 × 720 px, 30 FPS H.264 MP4)
+    - Fallback Animated GIF: `assets/fallback.gif` (640 × 360 px)
+    - Promotional Key Art: `assets/key_art.png` (1024 × 1024 px)
+  - Configured `"marketingAssets": { "icon": "assets/icon.png" }` in `devvit.json`.
+  - Added character-counted taglines (≤20 chars) and descriptions (≤35 chars) to `docs/PROMOTIONAL_ASSETS.md`.
+
+- **Reddit Developer Platform Upload & Subreddit Deployment**:
+  - Authenticated as `u/krozozz` and uploaded version `0.0.2` to `https://developers.reddit.com/apps/hell-shift` via `npx devvit upload`.
+  - Upgraded live installations to `v0.0.2` on both `r/Hell_Shift` and `r/hell_shift_dev`.
+  - Assembled complete Devpost Hackathon submission package for the **Reddit Game of the Day 2026 Hackathon**.
+
+### Files changed
+
+- `assets/*` (`icon.png`, `tile.png`, `fallback.png`, `fallback_video.mp4`, `fallback.gif`, `key_art.png`, SVGs)
+- `devvit.json`
+- `package.json`
+- `README.md`
+- `src/client/index.css`
+- `src/client/splash.tsx`
+- `docs/PROMOTIONAL_ASSETS.md`
+- `docs/AGENT_HANDOFF.md`
+- `tools/render-marketing-assets.js`
+- `tools/generate-fallback-video.js`
+- `tools/video-recorder.html`
+
+### Tests executed
+
+- `npm run typecheck` — passed (0 errors)
+- `npm test` — 8 suites, 39 passed
+- `npm run lint` — passed (0 errors)
+- `npm run build` — passed
+- `npm run verify` — passed
+- `npx devvit upload` — passed (v0.0.2 uploaded)
+- `npx devvit install` — passed (installed to `r/Hell_Shift` and `r/hell_shift_dev`)
+
+### Build status
+
+Production Devvit bundle built cleanly, uploaded to Reddit Developer Portal, and deployed to test subreddits.
+
+### Next recommended task
+
+Monitor the Devpost submission and community feedback on `r/Hell_Shift` and `r/Devvit`. Optional future roadmap: implement 100-enemy hell swarm waves and Rampage combo multipliers.
+
+
 
 
