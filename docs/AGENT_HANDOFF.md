@@ -412,6 +412,60 @@ Production Devvit bundle built cleanly, uploaded to Reddit Developer Portal, and
 
 Monitor the Devpost submission and community feedback on `r/Hell_Shift` and `r/Devvit`. Optional future roadmap: implement 100-enemy hell swarm waves and Rampage combo multipliers.
 
+---
+
+## Session 007 — OpenCode — Post-upload verification & leaderboard testability
+
+### Completed
+
+- **Live Reddit verification of the uploaded build (v0.0.2)** using the in-app browser:
+  - Inline splash card on `r/Hell_Shift` renders correctly (arena DEAD AIR, day #327, reset countdown, "ENTER THE ARENA").
+  - Expanded `game.html` briefing → run: DDA raycaster, HUD (mission clock, wave 1/5, health, ammo), DOOM face widget and shotgun firing (12 → 11 ammo) all work inside the Reddit webview with zero game console errors.
+  - Live `GET /api/init` → **200** with server-derived day/seed and Redis leaderboard data (`totalPlayers: 0`, empty leaderboard — correct for a fresh day).
+  - Live `POST /api/score` (anonymous) → **401** `{"status":"error","message":"You must be logged in to Reddit to submit scores."}` — auth guard confirmed working.
+  - `devvit logs` stream for `r/Hell_Shift` shows no server errors.
+- **Upload state confirmed**: app `Hell-Shift` (slug `hell-shift`), v0.0.2 is the latest uploaded version (`buildStatus: 1`), installed on `r/Hell_Shift` and `r/hell_shift_dev` (2 installs, 10 versions total). Uploaded 2026-11-22T19:18:35Z, matching the current source.
+- **Leaderboard testability refactor** (`src/server/core/leaderboard.ts`): replaced `typeof redis` with a narrow `LeaderboardRedis` structural interface (only `zCard`, `zRange`, `zScore`, `zRank`, `zAdd`, `hSet`, `hMGet`, `expire`). The real Devvit Redis client satisfies it unchanged; tests can now supply an in-memory fake with no casts.
+- **New tests** (`src/server/leaderboard.test.ts`, 7 cases with `FakeRedis`): first-score registration, best-score retention (lower replays ignored, higher replaces), 14-day TTL, 1-based rank math, anonymous/unknown-player standing, top-N listing with usernames + `isCurrentUser`, `ANONYMOUS` fallback for missing hash entries.
+- **Documentation updated**: `docs/PROGRESS.md` OpenCode section rewritten to reflect MVP completion, live verification evidence, remaining blockers (authenticated score path, publish decision) and test counts.
+
+### Files changed
+
+- `src/server/core/leaderboard.ts` (structural Redis interface)
+- `src/server/leaderboard.test.ts` (created)
+- `docs/PROGRESS.md`
+- `docs/AGENT_HANDOFF.md` (this entry)
+- `src/client/index.css` (pre-existing uncommitted trailing-newline-only diff, left untouched)
+
+### Tests executed
+
+- `npm run typecheck` — passed (0 errors)
+- `npm test` — 9 suites, **46 passed**
+- `npm run lint` — 0 errors (1 non-blocking Fast Refresh warning in `splash.tsx`)
+- `npm run build` — passed
+- `node tools/smoke-test.js` — 8 viewports passed, 0 console errors
+- Live browser checks on `r/Hell_Shift` (splash, expanded run, `/api/init`, `/api/score` guard)
+
+### Build status
+
+Production Devvit bundle builds cleanly from the current source; live app is v0.0.2 on both test subreddits.
+
+### Outstanding issues
+
+- **Authenticated end-to-end score submission is unverified live**: the anonymous browser session receives a 401 by design. Testing a real ranked submission requires a signed-in Reddit session in the browser (user action required).
+- Untracked recording files in the repo root and `assets/` (`Recording 2026-11-23 *.mp4`, `*.gif`) were left untouched.
+
+### Publish submission (2026-11-23)
+
+- Checked the developer platform Review Status page: v0.0.2 was **Uploaded** but not submitted (stepper at "Ready to submit").
+- Ran `npx devvit publish` (with `DEVVIT_ALLOW_SOURCE_UPLOAD=1` to skip the interactive source-upload prompt): created and submitted **version 0.0.3** for review.
+- Platform now shows: `0.0.3` → ✓ Draft → **Submitted** → **In review** → Approved; "Your submission is waiting for the app review team." Requested visibility: **Unlisted** (Launch Guide default, recommended for games).
+- Review takes ~1–2 business days; Reddit emails on approval. `devvit publish` must be re-run for every future launch version.
+
+### Next recommended task
+
+Sign in to Reddit in the in-app browser, play one run on `r/Hell_Shift`, and confirm the live `/api/score` → Redis → leaderboard refresh path end to end. Await the review email for v0.0.3.
+
 
 
 

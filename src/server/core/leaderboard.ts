@@ -1,7 +1,29 @@
-import type { redis } from '@devvit/web/server';
 import type { LeaderboardEntry } from '../../shared/api';
 
-type RedisClient = typeof redis;
+/**
+ * Narrow structural view of the Devvit Redis client used by the leaderboard.
+ * The real `redis` client from `@devvit/web/server` satisfies this shape, and
+ * tests can supply a small in-memory fake.
+ */
+export type LeaderboardRedis = {
+  zCard(key: string): Promise<number>;
+  zRange(
+    key: string,
+    start: number | string,
+    stop: number | string,
+    options?: {
+      by: 'score' | 'lex' | 'rank';
+      reverse?: boolean;
+      limit?: { offset: number; count: number };
+    }
+  ): Promise<{ member: string; score: number }[]>;
+  zScore(key: string, member: string): Promise<number | undefined>;
+  zRank(key: string, member: string): Promise<number | undefined>;
+  zAdd(key: string, ...members: { member: string; score: number }[]): Promise<number>;
+  hSet(key: string, fieldValues: Record<string, string>): Promise<number>;
+  hMGet(key: string, fields: string[]): Promise<(string | null)[]>;
+  expire(key: string, seconds: number): Promise<void>;
+};
 
 const LEADERBOARD_TTL_SECONDS = 14 * 86400; // 14 days
 
@@ -15,7 +37,7 @@ export type UserStanding = {
 };
 
 export const getDailyLeaderboard = async (
-  client: RedisClient,
+  client: LeaderboardRedis,
   dayKey: string,
   currentUserId: string | null,
   limit = 10
@@ -59,7 +81,7 @@ export const getDailyLeaderboard = async (
 };
 
 export const getUserStanding = async (
-  client: RedisClient,
+  client: LeaderboardRedis,
   dayKey: string,
   userId: string | null
 ): Promise<UserStanding> => {
@@ -99,7 +121,7 @@ export const getUserStanding = async (
 };
 
 export const recordDailyScore = async (
-  client: RedisClient,
+  client: LeaderboardRedis,
   dayKey: string,
   userId: string,
   username: string,

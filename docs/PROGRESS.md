@@ -6,19 +6,23 @@
 
 ## MVP implementation status — OpenCode
 
-### Completed (steps 1–2)
+### Completed (steps 1–4: MVP implemented, verified and uploaded)
 
-- Audited repository: Devvit Web 0.15 scaffold, React 19, Hono server, deterministic shared core, UI shell and Vitest suite exist.
-- Confirmed local environment: Node `v24.21.0`, Devvit `0.15.4`, `npm run verify` passes (31 tests, 0 lint errors, production build succeeds).
-- Verified Devvit 0.15 APIs against official docs:
-  - Client/server split with `/api/*` endpoints and CommonJS server bundles.
-  - Redis sorted sets (`zAdd`, `zRange`, `zScore`, `zRank`, `zCard`, `expire`) and per-installation namespacing.
-  - `context.userId` plus `reddit.getUserById()` from `@devvit/web/server` for identity.
-  - Client effects (`requestExpandedMode`, `showToast`, `navigateTo`) from `@devvit/web/client`.
+- **Shared core** (`src/shared/**`): deterministic daily seed, BSP arena generation, DDA raycasting/collision, fixed-step combat simulation, waves, pickups, scoring. 29 shared tests.
+- **Canvas renderer** (`src/client/render/**`): procedural wall/sprite textures, DDA column rendering with z-buffer sprite depth testing, centered double-barreled shotgun overlay, muzzle flash, damage tint, screen shake.
+- **Game integration** (`src/client/game.tsx`): 60 Hz fixed-step accumulator loop, renderer wiring, keyboard/mouse-drag/pointer-lock/lookDelta input, score submission with live leaderboard refresh.
+- **Server** (`src/server/**`): `/api/init` (UTC day, identity, Redis standing + leaderboard), `/api/score` (auth guard, stat validation, canonical score recomputation, best-score retention), menu/install internal endpoints. `src/server/core/validation.ts` rejects malformed days, out-of-range/non-integer stats, impossible ballistics (`shotsHit < 2 × kills`, too many shots for the reported duration) and forged victories; the client `score` field is ignored.
+- **Leaderboard persistence** (`src/server/core/leaderboard.ts`): Redis sorted set `hellshift:lb:<dayKey>` (userId member, 14-day TTL) plus username hash `hellshift:players`. Refactored to a narrow `LeaderboardRedis` structural interface so the logic is unit-testable with an in-memory fake (7 new tests in `src/server/leaderboard.test.ts`: best-score retention, rank math, top-N listing, TTL, anonymous fallback).
+- **Verification**: `npm run verify` — typecheck clean, lint 0 errors (1 non-blocking Fast Refresh warning in `splash.tsx`), **46/46 tests across 9 suites**, production build succeeds.
+- **Local browser smoke**: `node tools/smoke-test.js` — 8 viewports, canvas + firing interaction verified, 0 console errors.
+- **Live Reddit verification (2026-11-23)**: v0.0.2 uploaded to the Devvit App Directory and installed on `r/Hell_Shift` + `r/hell_shift_dev` (latest version, 10 versions total). Verified in a real browser:
+  - Inline splash card renders on `r/Hell_Shift` (arena DEAD AIR, day #327, countdown, CTA).
+  - Expanded `game.html` briefing → run: DDA raycaster, HUD (clock, wave, health, ammo), DOOM face widget and shotgun firing (12 → 11 ammo) all work inside the Reddit webview.
+  - Live `GET /api/init` → **200** with correct server-derived day/seed and Redis leaderboard data.
+  - Live `POST /api/score` (anonymous) → **401** with the expected login-required error message (auth guard confirmed).
+  - Live server log stream (`devvit logs`) shows no errors.
 
-### Current work (step 3 → implementation)
-
-Plan and explicit ownership for this MVP session:
+### Ownership (unchanged)
 
 | Area | Owner | Files |
 | --- | --- | --- |
@@ -30,33 +34,19 @@ Plan and explicit ownership for this MVP session:
 | Browser smoke harness and visual QA | Antigravity | `tools/preview-server.js`, `tools/smoke-test.js`, `docs/screenshots/**`, `docs/UI_BACKLOG.md` |
 | Shared docs and handoff | OpenCode (MVP section), Antigravity (UI section) | `docs/PROGRESS.md`, `docs/AGENT_HANDOFF.md` |
 
-Antigravity should not edit `src/client/game.tsx` or `src/shared/**` while OpenCode is integrating the renderer/server. OpenCode will not rewrite Antigravity-owned UI component files; interface changes will be coordinated through props and the handoff log.
-
-Implementation sequence:
-
-1. Replace the minimap preview with a low-resolution Canvas 2D DDA renderer: textured wall columns, floor/ceiling shading, depth-tested enemy/pickup sprites, muzzle flash and weapon overlay.
-2. Keep a fixed-step simulation loop with a render frame cap for stable frame rate.
-3. Wire mouse-drag/arrow-key turning and touch look deltas into the existing `InputState`.
-4. Implement server-side score validation, recomputation from submitted stats, Reddit identity, Redis daily leaderboard and `/api/score`.
-5. Update `/api/init` with real personal best, rank, total players and leaderboard data.
-6. Add unit tests for validation and leaderboard formatting; run `npm run verify` after each milestone.
-7. Local browser smoke test with the existing preview harness; Reddit playtest remains credential-blocked.
-
 ### Blockers
 
-- No Devvit auth token: `npm run dev`, upload and publish require the user to run `npm run login`. Local build, unit tests and preview tests remain available.
-- Reddit-environment verification is deferred until credentials are provided.
+- **Authenticated end-to-end score submission** is the only unverified live path: the anonymous browser session gets a 401 by design. Testing a real ranked submission requires a signed-in Reddit session in the browser (user action).
+- **Publish submitted, awaiting review**: `npx devvit publish` filed version **0.0.3** for review on 2026-11-23 (requested visibility: Unlisted, per the Launch Guide's game recommendation). Status on the developer platform: **In Review** — "Your submission is waiting for the app review team." Email confirmation arrives on approval (typically 1–2 business days).
 
 ### Tests (latest)
 
-- `npm run verify` — passed: typecheck, lint (1 non-blocking Fast Refresh warning in `splash.tsx`), 31/31 tests, production build.
+- `npm run verify` — passed: typecheck, lint (1 non-blocking Fast Refresh warning in `splash.tsx`), 46/46 tests (9 suites), production build.
 
 ### Next tasks
 
-- Renderer implementation and integration.
-- Server identity/leaderboard implementation.
-- Validation tests and full verification.
-- Browser smoke pass and handoff update.
+- Authenticated score-submission smoke test with a signed-in Reddit session.
+- Optional: run `devvit publish` / Devpost submission follow-up (requires user decision).
 
 ---
 
