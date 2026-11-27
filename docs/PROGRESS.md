@@ -37,7 +37,8 @@
 ### Blockers
 
 - **Authenticated end-to-end score submission** is the only unverified live path: the anonymous browser session gets a 401 by design. Testing a real ranked submission requires a signed-in Reddit session in the browser (user action).
-- **Publish submitted, awaiting review**: `npx devvit publish` filed version **0.0.3** for review on 2026-11-23 (requested visibility: Unlisted, per the Launch Guide's game recommendation). Status on the developer platform: **In Review** — "Your submission is waiting for the app review team." Email confirmation arrives on approval (typically 1–2 business days).
+- ~~Publish submitted, awaiting review~~ — **RESOLVED: approved and published 2026-11-25.** `npx devvit publish` filed version **0.0.3** for review on 2026-11-23 (requested visibility: Unlisted, per the Launch Guide's game recommendation). Reddit's review team approved it: *"Your app is now published as unlisted — The Reddit team has approved your app, hell-shift@0.0.3."* Confirmed via CLI: `patchVersion: 3`, `visibility: 2` (UNLISTED). As unlisted, it is installable by the owner in communities they moderate; public App Directory discoverability would require a future `devvit publish --public`.
+- **v0.0.5 public submission in review**: `npx devvit publish --public` filed version **0.0.5** on 2026-11-25 at the user's direction ("go fully public"). Version 0.0.4 was skipped — its upload died with `ECONNRESET` after local recording files bloated the source zip; recordings are now excluded via `.gitignore`. Custom-post apps require review; Reddit emails on approval (~1–2 business days). This build predates the mobile UX overhaul (Session 008), so the mobile fixes need a follow-up version once review completes.
 
 ### Tests (latest)
 
@@ -46,7 +47,9 @@
 ### Next tasks
 
 - Authenticated score-submission smoke test with a signed-in Reddit session.
-- Optional: run `devvit publish` / Devpost submission follow-up (requires user decision).
+- Optional: Devpost submission follow-up (user decision). Note: `devvit publish` already completed — v0.0.3 approved as Unlisted on 2026-11-25; v0.0.5 (`--public`) submitted 2026-11-25, in review.
+- Commit the Session 008 mobile UX overhaul (joystick, portrait rotate prompt, HUD overlap fix) — pending user approval; the same commit would carry the pending `.gitignore` recording exclusions and approval records.
+- Ship the mobile fixes in a follow-up version (0.0.6) after the v0.0.5 review resolves.
 
 ---
 
@@ -67,7 +70,7 @@ In accordance with `AGENTS.md`, the UI and visual QA boundaries are strictly def
 - `src/client/ui/GameOverModal.tsx` — End-of-run telemetry, stepped score rollup, rank and personal best.
 - `src/client/ui/LeaderboardModal.tsx` — Community leaderboard table with rank badges and user highlight.
 - `src/client/ui/PauseMenu.tsx` — In-game pause menu with CRT toggles and mission controls.
-- `src/client/ui/TouchControls.tsx` — Mobile touch layout (virtual D-pad, swipe-to-aim, tactical fire/reload).
+- `src/client/ui/TouchControls.tsx` — Mobile touch layout (floating analog joystick, swipe-to-aim, tactical fire/reload).
 - `src/client/ui/CRTOverlay.tsx` — Retro CRT scanline, phosphor flicker, and vignette post-processing.
 - `src/client/splash.tsx` — Reddit feed inline card interface.
 - `src/client/game.tsx` — Expanded game container and React state machine.
@@ -175,8 +178,8 @@ The interface adapts cleanly across four core viewport formats:
 
 1. **Desktop / Expanded (1280x800)**: Full dual-console HUD, complete telemetry display, keyboard/mouse pointer controls.
 2. **Reddit Feed Inline Card (390x600)**: Compact daily briefing card, countdown timer, active survivor count, and high-visibility "Enter the arena" CTA.
-3. **Mobile Portrait (390x844)**: Stacked HUD consoles elevated above the virtual D-pad and Fire/Reload buttons to avoid touch thumb interference. Touch targets maintain >=44px accessible dimensions.
-4. **Mobile Landscape (844x390)**: Compact horizontal telemetry bars with maximum screen real estate for the canvas view.
+3. **Mobile Portrait (390x844)**: A "Rotate to Landscape" prompt blocks active runs in portrait (the simulation freezes so nobody dies off-screen); a best-effort `screen.orientation.lock('landscape')` runs first, with the prompt as the fallback on iOS/embedded WebViews. HUD consoles render as one compact row lifted clear of the thumb zones. Touch targets maintain >=44px accessible dimensions.
+4. **Mobile Landscape (844x390)**: HUD consoles tuck into the gap between the floating joystick (left) and the Fire/Reload column (right), with maximum screen real estate for the canvas view.
 
 ---
 
@@ -196,8 +199,8 @@ Executed via headless Chromium (`tools/smoke-test.js`) connecting to local previ
 | **TC-03: Leaderboard Modal** | 1280x800 | Table rendering, user highlight badge, top-3 rank badges | **PASS** | `docs/screenshots/03_leaderboard_modal.png` |
 | **TC-04: Combat Loop & HUD** | 1280x800 & Mobile | Canvas mount, radar minimap, clock countdown, weapon firing | **PASS** | `docs/screenshots/04_gameplay_hud.png` |
 | **TC-05: Pause Screen** | 1280x800 | System suspended modal, CRT toggle, resume button | **PASS** | `docs/screenshots/05_pause_menu.png` |
-| **TC-06: Mobile Controls** | 390x844 | D-pad, aim swipe zone, Fire (80x80px) & Reload buttons | **PASS** | `docs/screenshots/06_mobile_touch_portrait.png` |
-| **TC-07: Mobile Landscape** | 844x390 | Compact telemetry bars, wide canvas clearance | **PASS** | `docs/screenshots/07_mobile_landscape.png` |
+| **TC-06: Mobile Controls** | 390x844 | Rotate prompt blocks portrait run; joystick, aim swipe zone, Fire (80x80px) & Reload buttons verified | **PASS** | `docs/screenshots/06_mobile_touch_portrait.png` |
+| **TC-07: Mobile Landscape** | 844x390 | Rotate prompt clears; joystick pointer-drag tracking; HUD clears joystick/action columns | **PASS** | `docs/screenshots/07_mobile_landscape.png` |
 | **TC-08: Reddit Mobile Feed** | 390x600 | Inline feed card responsiveness in mobile iframe | **PASS** | `docs/screenshots/08_reddit_feed_mobile.png` |
 
 - **Console Errors Recorded**: `0`

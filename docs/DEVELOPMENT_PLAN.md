@@ -24,7 +24,7 @@
 - [x] Procedural wall textures and sprites.
 - [x] Canvas 2D raycasting renderer with depth-tested sprites and weapon overlay.
 - [x] Keyboard/mouse input, pointer lock, and decoupled drag-aiming.
-- [x] Touch controls with responsive D-pad and tactical buttons.
+- [x] Touch controls with floating analog joystick and tactical buttons.
 - [x] React HUD, briefing, pause and end screen components (Antigravity).
 - [x] Wire client to `/api/init` and `/api/score`.
 

@@ -448,23 +448,69 @@ Monitor the Devpost submission and community feedback on `r/Hell_Shift` and `r/D
 
 ### Build status
 
-Production Devvit bundle builds cleanly from the current source; live app is v0.0.2 on both test subreddits.
+Production Devvit bundle builds cleanly from the current source; **hell-shift@0.0.3 is published (Unlisted)** and installed on `r/Hell_Shift` + `r/hell_shift_dev`.
 
 ### Outstanding issues
 
 - **Authenticated end-to-end score submission is unverified live**: the anonymous browser session receives a 401 by design. Testing a real ranked submission requires a signed-in Reddit session in the browser (user action required).
 - Untracked recording files in the repo root and `assets/` (`Recording 2026-11-23 *.mp4`, `*.gif`) were left untouched.
 
-### Publish submission (2026-11-23)
+### Publish submission (2026-11-23) → APPROVED (2026-11-25)
 
 - Checked the developer platform Review Status page: v0.0.2 was **Uploaded** but not submitted (stepper at "Ready to submit").
-- Ran `npx devvit publish` (with `DEVVIT_ALLOW_SOURCE_UPLOAD=1` to skip the interactive source-upload prompt): created and submitted **version 0.0.3** for review.
-- Platform now shows: `0.0.3` → ✓ Draft → **Submitted** → **In review** → Approved; "Your submission is waiting for the app review team." Requested visibility: **Unlisted** (Launch Guide default, recommended for games).
-- Review takes ~1–2 business days; Reddit emails on approval. `devvit publish` must be re-run for every future launch version.
+- Ran `npx devvit publish` (with `DEVVIT_ALLOW_SOURCE_UPLOAD=1` to skip the interactive source-upload prompt): created and submitted **version 0.0.3** for review. Requested visibility: **Unlisted** (Launch Guide default, recommended for games).
+- **2026-11-25: Reddit's review team approved it.** Email notice: *"Your app is now published as unlisted — The Reddit team has approved your app, hell-shift@0.0.3. You can manage and install the app here: https://developers.reddit.com/apps/hell-shift. This version of your app is only available for you to install in communities you moderate."*
+- Verified via `npx devvit view --json`: `patchVersion: 3`, `visibility: 2` (UNLISTED; enum: PUBLIC=0, PRIVATE=1, UNLISTED=2). `devvit publish` must be re-run for every future launch version.
 
 ### Next recommended task
 
-Sign in to Reddit in the in-app browser, play one run on `r/Hell_Shift`, and confirm the live `/api/score` → Redis → leaderboard refresh path end to end. Await the review email for v0.0.3.
+Sign in to Reddit in the in-app browser, play one run on `r/Hell_Shift`, and confirm the live `/api/score` → Redis → leaderboard refresh path end to end.
+
+## Session 008 — OpenCode — Public launch push & mobile UX overhaul
+
+### Completed
+
+- **v0.0.5 submitted for review with `--public` visibility** (user-approved "go fully public"). Built, uploaded (`DEVVIT_ALLOW_SOURCE_UPLOAD=1`), remote build passed, submission accepted — currently **In review**; Reddit emails on approval. v0.0.4 was skipped: its upload failed with `ECONNRESET` because local recording files were inflating the source zip; `Recording *.mp4` / `assets/Recording *` are now gitignored.
+- **Reddit promotion (user-approved)**:
+  - r/Hell_Shift — "I'm an embedded systems engineer — I made HELL SHIFT, a daily retro FPS that runs in your feed (with AI, for the hackathon)" → `t3_1y5gqdl`.
+  - r/Devvit — "Shipped my first Devvit app for the games hackathon — a daily retro FPS that runs in the feed (I'm an embedded systems engineer)" → `t3_1y5grga`, flair *Feedback Request*, later edited to add the playable arena post + app page links (bare URLs — Reddit's rich-text editor ignores Markdown). Comment received from `reseph` (App Developer flair).
+- **Mobile UX overhaul (researched + executed)** — three fixes plus a bonus:
+  1. **HP bar no longer covers the screen.** Root cause: `@media (max-width: 600px)` forced `.hell-hud-bottombar` to `flex-direction: column` with `width: 100%` consoles *after* the touch layout rules, stacking full-width panels over the play view. Fixed with touch-scoped compact overrides: one row, auto widths, smaller padding/labels; landscape consoles now tuck into the gap between the joystick and action column (`left: 175px / right: 115px`); portrait consoles lift to `bottom: 220px` clear of both thumb zones. Also hid the redundant desktop `hell-hud-pause-btn` on touch (it collided with the `❚❚` touch pause) and padded the topbar so SFX clears it.
+  2. **Landscape auto-rotate with fallback.** Best-effort `screen.orientation.lock('landscape')` on run start/resume (try/catch — it rejects in the Reddit iframe and doesn't exist on iOS). When a small screen stays in portrait during a run, a full-screen "ROTATE TO LANDSCAPE" prompt appears and the simulation freezes (accumulator zeroed, no render steps) so nobody dies off-screen; rotating clears it and the run continues. Orientation lock is released when leaving play.
+  3. **D-pad → floating analog joystick.** Rewritten `TouchControls.tsx`: normalized (-1..1) output with 0.15 dead zone and radius clamp — zero engine changes because `simulation.ts` already clamps/normalizes `forward`/`strafe`. The joystick anchors where the thumb lands (clamped), knob follows via direct DOM writes (no per-frame React state).
+  4. **Multi-touch look bug fixed:** the look zone previously read `e.touches[0]`, so a second finger on the joystick hijacked aiming. Both zones now track their own `pointerId` with pointer capture. `touch-action: none` + non-passive `touchstart` `preventDefault()` also suppress synthesized mouse events — grabbing the joystick or swiping to aim no longer fires stray shots through the viewport's tap-to-fire path. FIRE/RELOAD/DOOR/PAUSE buttons unchanged.
+- **Smoke test extended** (`tools/smoke-test.js`): portrait now asserts the rotate prompt blocks the run; landscape asserts the prompt clears and performs a synthetic pointer-drag on the joystick to verify analog tracking. New assertions throw on failure (hard checks, not just logs).
+- **Docs updated:** `docs/PROGRESS.md` (Blockers/Next tasks, touch layout section, TC-06/TC-07 rows), `docs/TEST_RESULTS.md` (TC-06/TC-07), `docs/DEVELOPMENT_PLAN.md` (D-pad → joystick), this entry.
+
+### Files changed
+
+- `src/client/ui/TouchControls.tsx` (rewritten: analog joystick + pointer-id look tracking)
+- `src/client/game.tsx` (orientation lock/fallback state, portrait overlay, sim freeze)
+- `src/client/index.css` (HP-bar overlap fix, joystick/rotate-prompt styles, pause/SFX clearance)
+- `tools/smoke-test.js` (rotate-prompt + joystick-drag assertions)
+- `docs/PROGRESS.md`, `docs/TEST_RESULTS.md`, `docs/DEVELOPMENT_PLAN.md`, `docs/AGENT_HANDOFF.md` (this entry)
+- `docs/screenshots/06_mobile_touch_portrait.png`, `docs/screenshots/07_mobile_landscape.png` (refreshed)
+- Pre-existing pending (not mine): `.gitignore` (recording exclusions) and the v0.0.3 approval records in `docs/PROGRESS.md` / `docs/AGENT_HANDOFF.md`
+
+### Tests executed
+
+- `npm run verify` — passed: typecheck, lint (0 errors; 1 pre-existing Fast Refresh warning in `splash.tsx`), 46/46 tests (9 suites), production build.
+- `node tools/smoke-test.js` — **8 viewports, 0 console errors**, run 3× (final run against rebuilt `dist/client`); new portrait/landscape assertions all pass.
+
+### Build status
+
+Production bundle builds cleanly; screenshots refreshed from `dist/client` via the preview server. Note: the preview server serves `dist/`, so CSS-only edits require `npm run build` before re-running the smoke test.
+
+### Outstanding issues
+
+- **v0.0.5 (`--public`) is in review** — approval email pending (~1–2 business days). The mobile fixes are **not** in that build; they need a follow-up publish (0.0.6) after review completes.
+- **All Session 008 changes are uncommitted** — awaiting user approval. Committing `src/client/index.css` will also carry Antigravity's pre-existing trailing-newline-only diff (flagged, not reverted).
+- Authenticated `/api/score` → Redis → leaderboard live test still requires a signed-in Reddit session (user action).
+- iOS cannot lock orientation by design; the rotate prompt is the intended fallback there.
+
+### Next recommended task
+
+Get user approval to commit Session 008 (mobile fixes + pending `.gitignore`/docs records), then publish 0.0.6 with the mobile fixes once the v0.0.5 review resolves.
 
 
 

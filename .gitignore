@@ -10,3 +10,7 @@ coverage
 .edge-assets-profile
 .edge-video-profile
 .temp_frames
+
+# Screen recordings (user captures, not part of the app)
+Recording *.mp4
+assets/Recording *

@@ -266,11 +266,19 @@ async function main() {
     await sleep(800);
 
     const hasTouchControls = await evalJS('Boolean(document.querySelector(".hell-touch-root"))');
-    const hasDpad = await evalJS('Boolean(document.querySelector(".hell-touch-dpad"))');
+    const hasJoystick = await evalJS('Boolean(document.querySelector(".hell-touch-joystick"))');
     const hasFireBtn = await evalJS('Boolean(document.querySelector(".hell-touch-fire-btn"))');
+    const hasRotatePrompt = await evalJS('Boolean(document.querySelector(".hell-rotate-overlay"))');
     console.log(`- Touch Controls Active: ${hasTouchControls}`);
-    console.log(`- Virtual D-pad Active: ${hasDpad}`);
+    console.log(`- Virtual Joystick Active: ${hasJoystick}`);
     console.log(`- Touch Fire Button Active: ${hasFireBtn}`);
+    console.log(`- Portrait Rotate Prompt Visible: ${hasRotatePrompt}`);
+    if (!hasTouchControls || !hasJoystick || !hasFireBtn) {
+      throw new Error('Touch controls failed to render in mobile portrait');
+    }
+    if (!hasRotatePrompt) {
+      throw new Error('Rotate prompt missing in mobile portrait — the run should be blocked');
+    }
 
     await takeScreenshot('06_mobile_touch_portrait');
 
@@ -282,8 +290,40 @@ async function main() {
       deviceScaleFactor: 2,
       mobile: true,
     });
-    await sleep(500);
+    await sleep(600);
 
+    const rotateCleared = await evalJS('!document.querySelector(".hell-rotate-overlay")');
+    console.log(`- Rotate Prompt Cleared in Landscape: ${rotateCleared}`);
+    if (!rotateCleared) {
+      throw new Error('Rotate prompt did not clear after switching to landscape');
+    }
+
+    // Drag the joystick to verify analog pointer tracking
+    const joystickTracked = await evalJS(`(() => {
+      const zone = document.querySelector('.hell-touch-joystick-zone');
+      const knob = document.querySelector('.hell-touch-joystick-knob');
+      if (!zone || !knob) return false;
+      const rect = zone.getBoundingClientRect();
+      const fire = (type, x, y) => zone.dispatchEvent(new PointerEvent(type, {
+        pointerId: 7,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: x,
+        clientY: y,
+        bubbles: true,
+      }));
+      fire('pointerdown', rect.left + 60, rect.top + 60);
+      fire('pointermove', rect.left + 60, rect.top + 20);
+      const moved = knob.style.transform !== '';
+      fire('pointerup', rect.left + 60, rect.top + 20);
+      return moved;
+    })()`);
+    console.log(`- Joystick Tracks Pointer Drag: ${joystickTracked}`);
+    if (!joystickTracked) {
+      throw new Error('Joystick knob did not respond to a pointer drag');
+    }
+
+    await sleep(300);
     await takeScreenshot('07_mobile_landscape');
 
     // 8. TEST REDDIT MOBILE EMBED (FEED CARD 390x600)

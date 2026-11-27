@@ -42,6 +42,58 @@ export const GameApp = () => {
       window.matchMedia('(pointer: coarse)').matches
   );
 
+  // Portrait fallback for mobile: attempt a landscape lock while a run is
+  // active, and block the run with a rotate prompt when the platform
+  // refuses (iOS Safari and embedded WebViews cannot lock orientation).
+  const [isPortrait, setIsPortrait] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const rotateBlocked =
+    isTouchDevice && view === 'playing' && isPortrait && isSmallScreen;
+  const rotateBlockedRef = useRef(false);
+
+  useEffect(() => {
+    rotateBlockedRef.current = rotateBlocked;
+  }, [rotateBlocked]);
+
+  useEffect(() => {
+    if (!isTouchDevice) return;
+    const sync = () => {
+      setIsPortrait(window.matchMedia('(orientation: portrait)').matches);
+      setIsSmallScreen(
+        Math.min(window.innerWidth, window.innerHeight) <= 600
+      );
+    };
+    sync();
+    const mediaQuery = window.matchMedia('(orientation: portrait)');
+    mediaQuery.addEventListener('change', sync);
+    window.addEventListener('resize', sync);
+    return () => {
+      mediaQuery.removeEventListener('change', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, [isTouchDevice]);
+
+  useEffect(() => {
+    if (!isTouchDevice || view !== 'playing') return;
+    try {
+      // Best effort: only succeeds where the platform allows it (typically
+      // Chromium in fullscreen). Failures are swallowed — the portrait
+      // rotate prompt is the fallback.
+      void screen.orientation.lock('landscape').catch(() => {
+        // Orientation lock rejected; rotate prompt takes over.
+      });
+    } catch {
+      // Orientation lock unsupported (iOS / embedded WebView).
+    }
+    return () => {
+      try {
+        screen.orientation.unlock();
+      } catch {
+        // Nothing was locked.
+      }
+    };
+  }, [isTouchDevice, view]);
+
   const handleToggleAudio = useCallback(() => {
     const next = sound.toggleMute();
     setAudioMuted(next);
@@ -186,6 +238,13 @@ export const GameApp = () => {
 
       const current = gameStateRef.current;
       if (current && current.status === 'playing') {
+        // Freeze the run while the rotate prompt is up so nobody dies off-screen.
+        if (rotateBlockedRef.current) {
+          accumulatorRef.current = 0;
+          animFrameRef.current = requestAnimationFrame(loop);
+          return;
+        }
+
         accumulatorRef.current += frameDelta;
         let steps = 0;
         while (
@@ -562,6 +621,20 @@ export const GameApp = () => {
               }}
               onPause={() => setView('paused')}
             />
+          )}
+
+          {/* Portrait fallback: block the run until the device is landscape */}
+          {rotateBlocked && (
+            <div className="hell-rotate-overlay" role="status">
+              <div className="hell-rotate-icon" aria-hidden="true" />
+              <div className="hell-rotate-title">Rotate to Landscape</div>
+              <div className="hell-rotate-sub">
+                Turn your device sideways to enter the arena
+              </div>
+              <div className="hell-rotate-note">
+                Run frozen — the arena waits for you
+              </div>
+            </div>
           )}
         </>
       )}

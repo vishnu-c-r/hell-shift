@@ -1,6 +1,18 @@
 import { type FC, useEffect, useRef } from 'react';
 import type { TouchControlsProps } from './types';
 
+const JOYSTICK_RADIUS = 44;
+const JOYSTICK_DEAD_ZONE = 0.15;
+const LOOK_SENSITIVITY = 0.0075;
+
+type KnobState = {
+  pointerId: number;
+  originX: number;
+  originY: number;
+  knobX: number;
+  knobY: number;
+};
+
 export const TouchControls: FC<TouchControlsProps> = ({
   onMoveChange,
   onTurnDelta,
@@ -11,57 +23,195 @@ export const TouchControls: FC<TouchControlsProps> = ({
   canOpenDoor = false,
   onInteract,
 }) => {
-  const lookAreaRef = useRef<HTMLDivElement | null>(null);
-  const lastTouchXRef = useRef<number | null>(null);
-  const keysActiveRef = useRef<{ f: number; b: number; l: number; r: number }>({
-    f: 0,
-    b: 0,
-    l: 0,
-    r: 0,
+  const zoneRef = useRef<HTMLDivElement | null>(null);
+  const lookRef = useRef<HTMLDivElement | null>(null);
+  const baseRef = useRef<HTMLDivElement | null>(null);
+  const knobRef = useRef<HTMLDivElement | null>(null);
+  const knobStateRef = useRef<KnobState | null>(null);
+  const lookPointerRef = useRef<number | null>(null);
+  const lastLookXRef = useRef<number | null>(null);
+  const callbacksRef = useRef({ onMoveChange, onTurnDelta });
+
+  // Keep the latest callbacks reachable from the long-lived native listeners.
+  useEffect(() => {
+    callbacksRef.current = { onMoveChange, onTurnDelta };
   });
 
-  const updateMove = () => {
-    const forward = keysActiveRef.current.f - keysActiveRef.current.b;
-    const strafe = keysActiveRef.current.r - keysActiveRef.current.l;
-    onMoveChange(forward, strafe);
-  };
-
+  // Floating analog joystick. It tracks its own pointer id, so a second
+  // finger on the look zone can never steal movement input (and vice versa).
   useEffect(() => {
-    const el = lookAreaRef.current;
-    if (!el) return;
+    const zone = zoneRef.current;
+    const base = baseRef.current;
+    const knob = knobRef.current;
+    if (!zone || !base || !knob) return;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      if (touch) {
-        lastTouchXRef.current = touch.clientX;
+    const emitMove = (x: number, y: number) => {
+      const length = Math.hypot(x, y);
+      if (length < JOYSTICK_DEAD_ZONE) {
+        callbacksRef.current.onMoveChange(0, 0);
+        return;
+      }
+      const magnitude =
+        (Math.min(length, 1) - JOYSTICK_DEAD_ZONE) / (1 - JOYSTICK_DEAD_ZONE);
+      const normX = (x / length) * magnitude;
+      const normY = (y / length) * magnitude;
+      // Screen y grows downward; pressing up moves forward.
+      callbacksRef.current.onMoveChange(-normY, normX);
+    };
+
+    const placeBase = (x: number, y: number) => {
+      base.style.left = `${x}px`;
+      base.style.top = `${y}px`;
+      base.style.bottom = 'auto';
+      base.style.transform = 'translate(-50%, -50%)';
+      base.classList.add('hell-joystick-active');
+    };
+
+    const placeKnob = (x: number, y: number) => {
+      knob.style.transform = `translate(${x}px, ${y}px)`;
+    };
+
+    const reset = () => {
+      knobStateRef.current = null;
+      base.removeAttribute('style');
+      base.classList.remove('hell-joystick-active');
+      knob.style.transform = '';
+      callbacksRef.current.onMoveChange(0, 0);
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      // Mouse pointers keep the desktop drag-to-look path working.
+      if (e.pointerType === 'mouse' || knobStateRef.current !== null) return;
+      const rect = zone.getBoundingClientRect();
+      const originX = e.clientX - rect.left;
+      const originY = e.clientY - rect.top;
+      knobStateRef.current = {
+        pointerId: e.pointerId,
+        originX,
+        originY,
+        knobX: 0,
+        knobY: 0,
+      };
+      placeBase(originX, originY);
+      placeKnob(0, 0);
+      emitMove(0, 0);
+      try {
+        zone.setPointerCapture(e.pointerId);
+      } catch {
+        // Synthetic pointers have no capture target; tracking still works.
       }
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      if (!touch || lastTouchXRef.current === null) return;
-      const delta = touch.clientX - lastTouchXRef.current;
-      lastTouchXRef.current = touch.clientX;
-      // Convert pixel delta to turn angle
-      onTurnDelta(delta * 0.0075);
+    const handlePointerMove = (e: PointerEvent) => {
+      const state = knobStateRef.current;
+      if (!state || e.pointerId !== state.pointerId) return;
+      const rect = zone.getBoundingClientRect();
+      const rawX = e.clientX - rect.left - state.originX;
+      const rawY = e.clientY - rect.top - state.originY;
+      const length = Math.hypot(rawX, rawY);
+      const scale = length > JOYSTICK_RADIUS ? JOYSTICK_RADIUS / length : 1;
+      state.knobX = rawX * scale;
+      state.knobY = rawY * scale;
+      placeKnob(state.knobX, state.knobY);
+      emitMove(state.knobX / JOYSTICK_RADIUS, state.knobY / JOYSTICK_RADIUS);
     };
 
-    const handleTouchEnd = () => {
-      lastTouchXRef.current = null;
+    const handlePointerEnd = (e: PointerEvent) => {
+      const state = knobStateRef.current;
+      if (!state || e.pointerId !== state.pointerId) return;
+      try {
+        zone.releasePointerCapture(state.pointerId);
+      } catch {
+        // Already released by the browser.
+      }
+      reset();
     };
 
-    el.addEventListener('touchstart', handleTouchStart, { passive: true });
-    el.addEventListener('touchmove', handleTouchMove, { passive: true });
-    el.addEventListener('touchend', handleTouchEnd, { passive: true });
-    el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    // Cancel synthesized mouse events so grabbing the joystick never fires a
+    // stray shot through the viewport's tap-to-fire path.
+    const suppressCompatMouse = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+
+    zone.addEventListener('pointerdown', handlePointerDown);
+    zone.addEventListener('pointermove', handlePointerMove);
+    zone.addEventListener('pointerup', handlePointerEnd);
+    zone.addEventListener('pointercancel', handlePointerEnd);
+    zone.addEventListener('touchstart', suppressCompatMouse, { passive: false });
 
     return () => {
-      el.removeEventListener('touchstart', handleTouchStart);
-      el.removeEventListener('touchmove', handleTouchMove);
-      el.removeEventListener('touchend', handleTouchEnd);
-      el.removeEventListener('touchcancel', handleTouchEnd);
+      zone.removeEventListener('pointerdown', handlePointerDown);
+      zone.removeEventListener('pointermove', handlePointerMove);
+      zone.removeEventListener('pointerup', handlePointerEnd);
+      zone.removeEventListener('pointercancel', handlePointerEnd);
+      zone.removeEventListener('touchstart', suppressCompatMouse);
+      if (knobStateRef.current !== null) reset();
     };
-  }, [onTurnDelta]);
+  }, []);
+
+  // Right-side look zone. Claims one pointer id for aiming so a simultaneous
+  // joystick finger can never hijack the camera (the old code read touches[0]).
+  useEffect(() => {
+    const el = lookRef.current;
+    if (!el) return;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' || lookPointerRef.current !== null) return;
+      lookPointerRef.current = e.pointerId;
+      lastLookXRef.current = e.clientX;
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {
+        // Synthetic pointers have no capture target; tracking still works.
+      }
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (
+        lookPointerRef.current !== e.pointerId ||
+        lastLookXRef.current === null
+      ) {
+        return;
+      }
+      const delta = e.clientX - lastLookXRef.current;
+      lastLookXRef.current = e.clientX;
+      // Convert pixel delta to turn angle
+      callbacksRef.current.onTurnDelta(delta * LOOK_SENSITIVITY);
+    };
+
+    const handlePointerEnd = (e: PointerEvent) => {
+      if (lookPointerRef.current !== e.pointerId) return;
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch {
+        // Already released by the browser.
+      }
+      lookPointerRef.current = null;
+      lastLookXRef.current = null;
+    };
+
+    // Cancel synthesized mouse events so swiping to aim never fires a stray
+    // shot when the finger lifts.
+    const suppressCompatMouse = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+
+    el.addEventListener('pointerdown', handlePointerDown);
+    el.addEventListener('pointermove', handlePointerMove);
+    el.addEventListener('pointerup', handlePointerEnd);
+    el.addEventListener('pointercancel', handlePointerEnd);
+    el.addEventListener('touchstart', suppressCompatMouse, { passive: false });
+
+    return () => {
+      el.removeEventListener('pointerdown', handlePointerDown);
+      el.removeEventListener('pointermove', handlePointerMove);
+      el.removeEventListener('pointerup', handlePointerEnd);
+      el.removeEventListener('pointercancel', handlePointerEnd);
+      el.removeEventListener('touchstart', suppressCompatMouse);
+      lookPointerRef.current = null;
+      lastLookXRef.current = null;
+    };
+  }, []);
 
   return (
     <div className="hell-touch-root">
@@ -75,108 +225,21 @@ export const TouchControls: FC<TouchControlsProps> = ({
         ❚❚
       </button>
 
-      {/* Left movement cross / D-pad */}
-      <div className="hell-touch-dpad">
-        <button
-          type="button"
-          className="hell-dpad-btn hell-dpad-up"
-          onTouchStart={() => {
-            keysActiveRef.current.f = 1;
-            updateMove();
-          }}
-          onTouchEnd={() => {
-            keysActiveRef.current.f = 0;
-            updateMove();
-          }}
-          onMouseDown={() => {
-            keysActiveRef.current.f = 1;
-            updateMove();
-          }}
-          onMouseUp={() => {
-            keysActiveRef.current.f = 0;
-            updateMove();
-          }}
-          aria-label="Move forward"
-        >
-          ▲
-        </button>
-        <div className="hell-dpad-mid">
-          <button
-            type="button"
-            className="hell-dpad-btn hell-dpad-left"
-            onTouchStart={() => {
-              keysActiveRef.current.l = 1;
-              updateMove();
-            }}
-            onTouchEnd={() => {
-              keysActiveRef.current.l = 0;
-              updateMove();
-            }}
-            onMouseDown={() => {
-              keysActiveRef.current.l = 1;
-              updateMove();
-            }}
-            onMouseUp={() => {
-              keysActiveRef.current.l = 0;
-              updateMove();
-            }}
-            aria-label="Strafe left"
-          >
-            ◀
-          </button>
-          <div className="hell-dpad-center" />
-          <button
-            type="button"
-            className="hell-dpad-btn hell-dpad-right"
-            onTouchStart={() => {
-              keysActiveRef.current.r = 1;
-              updateMove();
-            }}
-            onTouchEnd={() => {
-              keysActiveRef.current.r = 0;
-              updateMove();
-            }}
-            onMouseDown={() => {
-              keysActiveRef.current.r = 1;
-              updateMove();
-            }}
-            onMouseUp={() => {
-              keysActiveRef.current.r = 0;
-              updateMove();
-            }}
-            aria-label="Strafe right"
-          >
-            ▶
-          </button>
+      {/* Left floating analog joystick */}
+      <div
+        ref={zoneRef}
+        className="hell-touch-joystick-zone"
+        role="group"
+        aria-label="Movement joystick"
+      >
+        <div ref={baseRef} className="hell-touch-joystick">
+          <div ref={knobRef} className="hell-touch-joystick-knob" />
         </div>
-        <button
-          type="button"
-          className="hell-dpad-btn hell-dpad-down"
-          onTouchStart={() => {
-            keysActiveRef.current.b = 1;
-            updateMove();
-          }}
-          onTouchEnd={() => {
-            keysActiveRef.current.b = 0;
-            updateMove();
-          }}
-          onMouseDown={() => {
-            keysActiveRef.current.b = 1;
-            updateMove();
-          }}
-          onMouseUp={() => {
-            keysActiveRef.current.b = 0;
-            updateMove();
-          }}
-          aria-label="Move backward"
-        >
-          ▼
-        </button>
       </div>
 
       {/* Right side touch zone for aiming */}
       <div
-        ref={lookAreaRef}
+        ref={lookRef}
         className="hell-touch-aim-zone"
         aria-label="Swipe to look"
       >

@@ -1223,45 +1223,63 @@ button {
   font-size: 1.1rem;
 }
 
-.hell-touch-dpad {
+/* The touch layer provides its own pause button; hide the HUD's desktop one
+   so the two never stack on top of each other in the corner. */
+.has-touch-controls .hell-hud-pause-btn {
+  display: none;
+}
+
+/* Keep the remaining top-bar controls (SFX) clear of the touch pause button. */
+.has-touch-controls .hell-hud-topbar {
+  padding-right: 44px;
+}
+
+/* Floating analog joystick (left thumb) */
+.hell-touch-joystick-zone {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
+  left: 0;
+  bottom: 0;
+  width: min(45%, 180px);
+  height: 55%;
   pointer-events: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  touch-action: none;
 }
 
-.hell-dpad-mid {
-  display: flex;
-  align-items: center;
-}
-
-.hell-dpad-center {
-  width: 44px;
-  height: 44px;
-  background: rgba(20, 12, 9, 0.85);
-  border: 1px solid #362218;
-}
-
-.hell-dpad-btn {
-  width: 48px;
-  height: 48px;
-  background: rgba(30, 18, 14, 0.9);
-  border: 1px solid var(--rust);
-  color: var(--bone);
+.hell-touch-joystick {
+  position: absolute;
+  left: 76px;
+  bottom: 76px;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(42, 26, 19, 0.55),
+    rgba(14, 8, 6, 0.75)
+  );
+  border: 2px solid rgba(190, 122, 88, 0.5);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.65);
+  transform: translate(-50%, 50%);
   display: grid;
   place-items: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 120ms ease;
 }
 
-.hell-dpad-btn:active {
-  background: var(--ember);
-  color: #110705;
+.hell-touch-joystick.hell-joystick-active {
+  opacity: 1;
+  border-color: var(--ember);
+}
+
+.hell-touch-joystick-knob {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #7a4b36, #2b170f);
+  border: 2px solid var(--rust);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
 }
 
 .hell-touch-aim-zone {
@@ -1271,6 +1289,7 @@ button {
   bottom: 120px;
   width: 50vw;
   pointer-events: auto;
+  touch-action: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1333,24 +1352,91 @@ button {
   background: #442518;
 }
 
-/* Touch layout positioning when on-screen controls are active */
+/* Touch layout: tuck the status consoles into the gap between the joystick
+   (left) and the action buttons (right) along the bottom edge. */
 .has-touch-controls .hell-hud-bottombar {
   position: absolute;
-  bottom: 170px;
-  left: 14px;
-  right: 14px;
+  bottom: 16px;
+  left: 175px;
+  right: 115px;
   width: auto;
   pointer-events: none;
   justify-content: space-between;
 }
 
-@media (min-width: 601px) and (orientation: landscape) {
-  .has-touch-controls .hell-hud-bottombar {
-    bottom: 16px;
-    left: 175px;
-    right: 115px;
-    width: auto;
+/* ==========================================================================
+   PORTRAIT ROTATE PROMPT
+   ========================================================================== */
+
+.hell-rotate-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: rgba(9, 5, 4, 0.97);
+  pointer-events: auto;
+}
+
+.hell-rotate-icon {
+  width: 46px;
+  height: 78px;
+  border: 3px solid var(--bone);
+  border-radius: 9px;
+  position: relative;
+  animation: hell-rotate-phone 1.8s ease-in-out infinite;
+}
+
+.hell-rotate-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bone);
+  transform: translateX(-50%);
+}
+
+@keyframes hell-rotate-phone {
+  0%,
+  15% {
+    transform: rotate(0deg);
   }
+  55%,
+  85% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.hell-rotate-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: var(--ember);
+  text-transform: uppercase;
+}
+
+.hell-rotate-sub {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: var(--bone);
+}
+
+.hell-rotate-note {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  color: #8d7462;
+  text-transform: uppercase;
 }
 
 /* ==========================================================================
@@ -1385,6 +1471,49 @@ button {
   .hell-hud-console-block {
     width: 100%;
     min-width: 0;
+  }
+}
+
+/* Touch layout on small screens: keep the consoles in ONE compact row.
+   Stacking them full-width here used to cover the whole play view. */
+@media (max-width: 600px) {
+  .has-touch-controls .hell-hud-bottombar {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .has-touch-controls .hell-hud-console-block {
+    width: auto;
+    min-width: 0;
+    padding: 6px 8px;
+  }
+
+  .has-touch-controls .hell-vital-block {
+    flex: 1;
+  }
+
+  .has-touch-controls .hell-ammo-block {
+    flex: 0 0 auto;
+  }
+
+  .has-touch-controls .hell-vital-details {
+    min-width: 0;
+  }
+
+  .has-touch-controls .hell-hud-label {
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
+  }
+}
+
+/* Portrait phones: both bottom corners belong to the on-screen controls, so
+   lift the consoles clear above them instead of floating them mid-screen. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .has-touch-controls .hell-hud-bottombar {
+    bottom: 220px;
+    left: 14px;
+    right: 14px;
   }
 }
 

@@ -48,8 +48,8 @@ Ran via automated Chromium CDP runner (`tools/smoke-test.js`):
 | **TC-03** | Leaderboard Modal | 1280x800 | Daily standings table, operator highlight badge, top ranks | **PASS** | `docs/screenshots/03_leaderboard_modal.png` |
 | **TC-04** | Combat Loop & HUD | 1280x800 | 2.5D DDA raycaster, wall textures, radar minimap, firing | **PASS** | `docs/screenshots/04_gameplay_hud.png` |
 | **TC-05** | Pause Screen | 1280x800 | Shift suspended modal, CRT scanline toggle, resume button | **PASS** | `docs/screenshots/05_pause_menu.png` |
-| **TC-06** | Mobile Portrait | 390x844 | Virtual D-pad, aim swipe zone, 80x80px Fire button | **PASS** | `docs/screenshots/06_mobile_touch_portrait.png` |
-| **TC-07** | Mobile Landscape | 844x390 | Centered bottom HUD, maximum viewport clearance | **PASS** | `docs/screenshots/07_mobile_landscape.png` |
+| **TC-06** | Mobile Portrait | 390x844 | Rotate prompt blocks portrait run; analog joystick, aim swipe zone, 80x80px Fire button | **PASS** | `docs/screenshots/06_mobile_touch_portrait.png` |
+| **TC-07** | Mobile Landscape | 844x390 | Rotate prompt clears, joystick pointer-drag tracking, HUD clears joystick/action columns | **PASS** | `docs/screenshots/07_mobile_landscape.png` |
 | **TC-08** | Mobile Reddit Feed | 390x600 | Inline feed card responsiveness in mobile iframe | **PASS** | `docs/screenshots/08_reddit_feed_mobile.png` |
 
 - **Console Errors Detected**: `0`
