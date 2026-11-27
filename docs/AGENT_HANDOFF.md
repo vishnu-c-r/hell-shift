@@ -503,14 +503,14 @@ Production bundle builds cleanly; screenshots refreshed from `dist/client` via t
 
 ### Outstanding issues
 
-- **v0.0.5 (`--public`) is in review** — approval email pending (~1–2 business days). The mobile fixes are **not** in that build; they need a follow-up publish (0.0.6) after review completes.
-- **All Session 008 changes are uncommitted** — awaiting user approval. Committing `src/client/index.css` will also carry Antigravity's pre-existing trailing-newline-only diff (flagged, not reverted).
+- **v0.0.6 (`--public`) is in review** — submitted 2026-11-27 (superseding the v0.0.5 submission), approval email pending (~1–2 business days). It **includes** the mobile overhaul; the store `about` (sourced from `README.md`) was updated to joystick wording + a v0.0.6 changelog entry and verified in the submitted version record.
+- **Docs/README/writeup updates from the 0.0.6 publish are uncommitted** (README joystick wording, PROJECT_WRITEUP, this doc refresh) — awaiting user approval to commit and push.
 - Authenticated `/api/score` → Redis → leaderboard live test still requires a signed-in Reddit session (user action).
 - iOS cannot lock orientation by design; the rotate prompt is the intended fallback there.
 
 ### Next recommended task
 
-Get user approval to commit Session 008 (mobile fixes + pending `.gitignore`/docs records), then publish 0.0.6 with the mobile fixes once the v0.0.5 review resolves.
+Commit and push the 0.0.6 publish docs (README, PROJECT_WRITEUP, docs refresh), then watch for the v0.0.6 approval email and verify the public install on a fresh account.
 
 
 

@@ -33,7 +33,7 @@ We wanted:
 *   **Reddit-Native Leaderboards & Sharing**:
     *   Scores are automatically submitted to a subreddit-scoped Devvit Redis leaderboard.
     *   Features a **"Share Run to Reddit"** button that generates a formatted Reddit Markdown scorecard (with accuracy, waves cleared, and score) ready to paste into thread comments.
-*   **Universal Mobile & Desktop Support**: Desktop players get full Pointer Lock mouse-aim and WASD movement. Mobile Reddit app users automatically get responsive on-screen virtual D-pads and touch fire controls.
+*   **Universal Mobile & Desktop Support**: Desktop players get full Pointer Lock mouse-aim and WASD movement. Mobile Reddit app users automatically get a floating analog virtual joystick and touch fire controls.
 
 ---
 

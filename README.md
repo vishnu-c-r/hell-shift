@@ -17,7 +17,7 @@ Every day at 00:00 UTC, a brand-new industrial maze is procedurally generated fr
 * **Subreddit-Native Leaderboards**: Daily rankings persist in Devvit Redis, keeping only each user's single best score per UTC day.
 * **One-Click Run Sharing**: Click `📋 SHARE RUN TO REDDIT` on the game-over screen to generate a formatted Markdown scorecard ready to paste into thread comments.
 * **100% Procedural Audio & Assets**: Visceral shotgun blasts, sub-bass drops, demon roars, and airlock hisses generated in code via the Web Audio API—zero external CDNs or copyrighted assets.
-* **Universal Mobile & Desktop Support**: Full desktop mouse aim with Pointer Lock and responsive touch virtual D-pads for the Reddit mobile app.
+* **Universal Mobile & Desktop Support**: Full desktop mouse aim with Pointer Lock and a floating analog virtual joystick for the Reddit mobile app.
 
 ---
 
@@ -33,7 +33,7 @@ Every day at 00:00 UTC, a brand-new industrial maze is procedurally generated fr
 
 | Action | Desktop (Mouse & Keyboard) | Mobile (Touch Controls) |
 | :--- | :--- | :--- |
-| **Move** | `[W] [A] [S] [D]` or Arrow Keys | Left on-screen virtual D-pad |
+| **Move** | `[W] [A] [S] [D]` or Arrow Keys | Left floating analog joystick |
 | **Look / Turn** | Mouse (click to lock cursor) or `[←] [→]` | Swipe anywhere on right screen |
 | **Fire Shotgun** | Left Mouse Click or `[Space]` | `[FIRE]` touch button |
 | **Reload** | `[R]` | `[RELOAD]` touch button |
@@ -76,6 +76,11 @@ Community moderators can publish a fresh arena post at any time:
 ---
 
 ## Changelog
+
+### v0.0.6 — Mobile Controls Overhaul
+* **Touch controls**: Floating analog joystick replaces the D-pad; joystick and swipe-to-aim now track fingers independently for true multi-touch.
+* **Orientation**: Automatic landscape lock with a "Rotate to Landscape" fallback prompt that freezes the run on phones.
+* **HUD**: Compact status consoles that never cover the play view on small screens.
 
 ### Version 1.0.0 (Launch Release)
 * **Engine**: Custom 2.5D DDA raycaster with texture mapping, sprite billboard sorting, and 60 FPS animation loop.
