@@ -503,14 +503,14 @@ Production bundle builds cleanly; screenshots refreshed from `dist/client` via t
 
 ### Outstanding issues
 
-- **v0.0.6 (`--public`) is in review** — submitted 2026-11-27 (superseding the v0.0.5 submission), approval email pending (~1–2 business days). It **includes** the mobile overhaul; the store `about` (sourced from `README.md`) was updated to joystick wording + a v0.0.6 changelog entry and verified in the submitted version record.
-- **Docs/README/writeup updates from the 0.0.6 publish are uncommitted** (README joystick wording, PROJECT_WRITEUP, this doc refresh) — awaiting user approval to commit and push.
+- ~~v0.0.6 (`--public`) in review~~ — **RESOLVED: approved and published 2026-11-28 (Public).** Developer platform: `0.0.6 (latest)` → Visibility **Public**, Status **Approved**, pipeline **Published**. It includes the mobile overhaul; the store `about` (sourced from `README.md`) carries the joystick wording + v0.0.6 changelog entry.
+- ~~Docs/README/writeup updates from the 0.0.6 publish uncommitted~~ — committed and pushed (see Next recommended task).
 - Authenticated `/api/score` → Redis → leaderboard live test still requires a signed-in Reddit session (user action).
 - iOS cannot lock orientation by design; the rotate prompt is the intended fallback there.
 
 ### Next recommended task
 
-Commit and push the 0.0.6 publish docs (README, PROJECT_WRITEUP, docs refresh), then watch for the v0.0.6 approval email and verify the public install on a fresh account.
+Play a run from the now-public app (fresh account, Apps directory) to verify the live `/api/score` → Redis → leaderboard path end to end — this also playtests the mobile controls on a real device if done from the Reddit mobile app.
 
 
 

@@ -38,7 +38,7 @@
 
 - **Authenticated end-to-end score submission** is the only unverified live path: the anonymous browser session gets a 401 by design. Testing a real ranked submission requires a signed-in Reddit session in the browser (user action).
 - ~~Publish submitted, awaiting review~~ — **RESOLVED: approved and published 2026-11-25.** `npx devvit publish` filed version **0.0.3** for review on 2026-11-23 (requested visibility: Unlisted, per the Launch Guide's game recommendation). Reddit's review team approved it: *"Your app is now published as unlisted — The Reddit team has approved your app, hell-shift@0.0.3."* Confirmed via CLI: `patchVersion: 3`, `visibility: 2` (UNLISTED). As unlisted, it is installable by the owner in communities they moderate; public App Directory discoverability would require a future `devvit publish --public`.
-- ~~v0.0.5 public submission~~ — **superseded by v0.0.6 on 2026-11-27.** v0.0.5 was filed `--public` on 2026-11-25 (v0.0.4 was skipped — its upload died with `ECONNRESET` after local recording files bloated the source zip; recordings are now gitignored). Before approval, the user directed an immediate re-publish with the mobile overhaul, so **v0.0.6 is now the active submission**: built, uploaded, **In review** since 2026-11-27, requested visibility **Public**. Custom-post apps require review; Reddit emails on approval (~1–2 business days). The store description (`about`) is sourced from `README.md` at publish time — README was updated (D-pad → analog joystick wording + v0.0.6 changelog entry) before publishing, and verified present in the submitted version's `about` via `devvit view --json`.
+- ~~Public submission in review~~ — **RESOLVED: v0.0.6 approved and published 2026-11-28 as Public.** History: v0.0.5 was filed `--public` on 2026-11-25 (v0.0.4 skipped — its upload died with `ECONNRESET` after local recording files bloated the source zip; recordings are now gitignored), then superseded by **v0.0.6** on 2026-11-27, which added the Session 008 mobile overhaul. Reddit approved it the next day. Developer platform confirms: `0.0.6 (latest)` → Visibility **Public**, Status **Approved**, pipeline **Published** ("visible to all users in the Apps directory"). The store description (`about`) is sourced from `README.md` at publish time — README was updated (D-pad → analog joystick wording + v0.0.6 changelog entry) before publishing, and verified present in the submitted version's `about` via `devvit view --json`.
 
 ### Tests (latest)
 
@@ -47,9 +47,10 @@
 ### Next tasks
 
 - Authenticated score-submission smoke test with a signed-in Reddit session.
-- Optional: Devpost submission follow-up (user decision). Note: `devvit publish` history — v0.0.3 approved Unlisted (2026-11-25); v0.0.6 (`--public`, includes mobile overhaul) submitted 2026-11-27, in review.
+- Optional: Devpost submission follow-up (user decision). Note: `devvit publish` history — v0.0.3 approved Unlisted (2026-11-25); **v0.0.6 (`--public`, includes mobile overhaul) approved and published 2026-11-28 (Public)**.
 - ~~Commit the Session 008 mobile UX overhaul~~ — **DONE:** commit `7df8cab` pushed to `origin/main` (2026-11-27).
-- ~~Ship the mobile fixes in a follow-up version (0.0.6)~~ — **DONE:** v0.0.6 submitted 2026-11-27 with `--public`, awaiting approval email.
+- ~~Ship the mobile fixes in a follow-up version (0.0.6)~~ — **DONE:** v0.0.6 submitted 2026-11-27 with `--public`; **approved and published 2026-11-28 (Public)**.
+- Verify the public install: play a run from a fresh/non-mod account via the Apps directory listing, and confirm the live `/api/score` → Redis → leaderboard path on that session.
 
 ---
 
